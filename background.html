@@ -1,0 +1,240 @@
+﻿<html>
+<head>
+</head>
+<body>
+    <embed type="application/foo" id="plugin" />
+
+    <script type="text/javascript">
+        window.NODE = document.getElementById("plugin");
+        var libs = {};
+        function require(libName) {
+            return libs[libName]();
+        };
+    </script>
+
+    <script src="node/util.js"></script>
+    <script src="node/stream.js"></script>
+    <script src="node/events.js"></script>
+    <script src="node/assert.js"></script>
+    <script src="node/net.js"></script>
+    <script src="node/freelist.js"></script>
+    <script src="node/crypto.js"></script>
+    <script src="node/http2.js"></script>
+    <script src="node/url.js"></script>
+    <script src="node/buffer.js"></script>
+    <script src="node/punycode.js"></script>
+    <script src="node/querystring.js"></script>
+
+    <script src="crypto/crypto-sha1-hmac.js"></script>
+
+    <script src="websockets/utils.js"></script>
+    <script src="websockets/websocket.js"></script>
+    <script src="websockets/WebSocketClient.js"></script>
+    <script src="websockets/WebSocketConnection.js"></script>
+    <script src="websockets/WebSocketFrame.js"></script>
+    <script src="websockets/WebSocketRequest.js"></script>
+    <script src="websockets/WebSocketRouter.js"></script>
+    <script src="websockets/WebSocketRouterRequest.js"></script>
+    <script src="websockets/WebSocketServer.js"></script>
+
+    <script src="websockets/FastBufferList.js"></script>
+    <script src="websockets/ctio-faster.js"></script>
+    <script>
+
+//        var http = require('http');
+//        http.createServer(function (req, res) {
+//            res.shouldKeepAlive = false;
+//            res.writeHead(200, { 'Content-Type': 'text/plain' });
+//            res.end('you are using firefox which works for some reason, so does chrome aparently!\n');
+//        }).listen(8080, "192.168.1.101\0");
+
+//        var buffer = null;
+//        var socket = NODE.createSocket();
+//        socket.bind("192.168.1.101\0", 8080);
+//        socket.listen(100);
+//        socket.onconnection = function (newSocket) {
+//            newSocket.readStart();
+//            newSocket.onread = function (b) {
+//                buffer = b;
+//                console.log(buffer);
+//            }
+//        };
+//   
+        var WebSocketServer = require('websocket').server;
+        var http = require('http');
+
+
+        var server = http.createServer(function (request, response) {
+            console.log((new Date()) + " Received request for " + request.url);
+            response.writeHead(404);
+            response.end();
+        });
+        server.listen(8080, function () {
+            console.log("Server is listening on port 8080");
+        });
+
+        wsServer = new WebSocketServer({
+            httpServer: server,
+            autoAcceptConnections: true
+        });
+        var conn;
+        wsServer.on('connect', function (connection) {
+            console.log("device connected...");
+            conn = connection;
+            connection.on('message', function (message) {
+                if (message.type === 'utf8') {
+                    var data = JSON.parse(message.utf8Data);
+                    if (data.connect) {
+                        if (data.type == "Computer") {
+                            var c = new Computer(this);
+                            Computer.collection[c.id] = c;
+                            console.log("                   ...it's a computer");
+                        }
+                        else if (data.type == "Handheld") {
+                            var computer = Computer.collection[data.connectTo];
+                            if (computer) {
+                                computer.addControl(new Handheld(connection));
+                            }
+                            console.log("                   ...it's a handheld");
+                        }
+                    }
+                }
+            });
+        });
+
+
+        function Device(connection, type) {
+            this.connection = connection;
+            this.type = type;
+        }
+        Device.prototype.disconnect = function () {
+            this.connection.close();
+        }
+
+        function Computer(connection) {
+            Device.call(this, connection, "Computer");
+            var computer = this;
+
+            this.id = Computer.count++;
+            this.controls = {};
+            this.connection.on("message", function (message) {
+                if (message.type == "utf8") {
+                    var data = JSON.parse(message.utf8Data);
+                    if (data.disconnect) {
+                        computer.disconnect();
+                    }
+                    if (data.message === true) {
+                        console.log("recieved text message");
+                        computer.sendMessage(data);
+                    }
+                }
+            });
+
+            this.connection.on("close", function (connection) {
+                computer.disconnect();
+            });
+        };
+        Computer.prototype = new Device();
+        Computer.prototype.constructor = Computer;
+        Computer.collection = {};
+        Computer.count = 0;
+
+        Computer.prototype.disconnect = function () {
+            for (var i in this.controls) {
+                this.controls[i].disconnect();
+            }
+            delete Computer.collection[this.id];
+            console.log("a computer disconnected");
+        }
+        Computer.prototype.addControl = function (handheld) {
+            handheld.computer = this;
+            this.controls[handheld.id] = handheld;
+            this.notifyConnect(handheld)
+        };
+        Computer.prototype.removeControl = function (handheld) {
+            this.notifyDisconnect(handheld);
+            delete this.controls[handheld.id];
+        };
+        Computer.prototype.notifyDisconnect = function (handheld) {
+            if (this.connection.connected) {
+                var obj = handheld.toJSON();
+                obj.disconnect = true;
+                this.connection.sendUTF(JSON.stringify(obj));
+            }
+        };
+        Computer.prototype.notifyConnect = function (handheld) {
+            if (this.connection.connected) {
+                var obj = handheld.toJSON();
+                obj.connect = true;
+                this.connection.sendUTF(JSON.stringify(obj));
+            }
+        };
+        Computer.prototype.sendMessage = function (message) {
+            if (message.broadcast) {
+                for (var i in this.controls) {
+                    this.controls[i].sendMessage(message);
+                }
+            }
+            else if (message.id) {
+                var handheld = this.controls[message.id];
+                handheld && handheld.sendMessage(message);
+            }
+        }
+
+
+        function Handheld(connection) {
+            Device.call(this, connection, "Handheld");
+            var handheld = this;
+
+            this.computer = null;
+            this.id = Handheld.count++;
+
+            this.orientation = {
+                alpha: 0,
+                beta: 0,
+                gamma: 0
+            };
+
+            this.connection.on("close", function (connection) {
+                handheld.computer.removeControl(handheld);
+                console.log("a handheld disconnected");
+            });
+
+            this.connection.on("message", function (message) {
+                if (message.type == 'utf8') {
+                    //console.log(message);
+                    var data = JSON.parse(message.utf8Data)
+                    handheld.orientation = data.orientation;
+                    if (handheld.computer) {
+                        handheld.update();
+                    }
+                }
+            });
+        };
+        Handheld.prototype = new Device();
+        Handheld.prototype.constructor = Handheld;
+        Handheld.count = 0;
+
+        Handheld.prototype.update = function () {
+            var obj = this.toJSON();
+            obj.update = true;
+            this.computer.connection.sendUTF(JSON.stringify(obj));
+        };
+        Handheld.prototype.toJSON = function () {
+            var orientation = this.orientation;
+            return {
+                id: this.id,
+                orientation: {
+                    alpha: orientation.alpha,
+                    beta: orientation.beta,
+                    gamma: orientation.gamma
+                }
+            };
+        };
+        Handheld.prototype.sendMessage = function (message) {
+            message.id = this.id;
+            this.connection.sendUTF(JSON.stringify(message));
+        };
+        </script>
+</body>
+</html>
