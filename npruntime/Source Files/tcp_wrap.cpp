@@ -156,8 +156,6 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 		return true;
 	}
 
-
-
 	InvokeParams* params = new InvokeParams;
 	params->name = name;
 	params->object = this;
@@ -265,9 +263,6 @@ void TCPWrap::invoke_worker_thread(uv_async_t* handle)
 	}
 }
 
-
-
-
 bool TCPWrap::bind(NPVariant address, NPVariant port) 
 {
 	int c_port = port.value.doubleValue;
@@ -281,7 +276,6 @@ bool TCPWrap::bind(NPVariant address, NPVariant port)
 
 	return true;
 }
-
 
 DWORD WINAPI run_uv(LPVOID lpParam) 
 {
@@ -375,7 +369,7 @@ void OnRead(uv_stream_t* stream, ssize_t nread, uv_buf_t buf)
 		args[2].type = NPVariantType_Double;
 		args[2].value.doubleValue = nread;
 
-		tcpWrap->fireCallback("onread",args,3);
+		((TCPWrap*)stream->data)->fireCallback("onread",args,3);
 	}
 }
 
