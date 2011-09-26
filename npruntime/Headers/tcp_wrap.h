@@ -85,9 +85,5 @@ struct InvokeParams {
 static InvokeParams* currentParamWrite = NULL;
 static InvokeParams* currentParamRead = NULL;
 
-
-
-
-
 #endif
 

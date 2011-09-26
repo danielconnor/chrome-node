@@ -142,7 +142,6 @@ bool BufferWrap::asciiSlice(NPVariant start, NPVariant end,NPVariant* string)
 	string->value.stringValue.UTF8Characters = result;
 	string->value.stringValue.UTF8Length = length;
 
-
 	return true;
 }
 

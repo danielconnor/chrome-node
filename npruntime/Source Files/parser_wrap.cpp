@@ -25,7 +25,6 @@ ParserWrap::ParserWrap(NPP instance): ScriptableObject(instance)
 	addMethod("execute");
 	addMethod("reinitialize");
 
-
 	addCallback("onMessageBegin");
 	addCallback("onURL");
 	addCallback("onHeaderField");
@@ -230,8 +229,6 @@ int OnHeadersComplete(http_parser* parser)
 	keepAlive.type = NPVariantType_Bool;
 	keepAlive.value.boolValue = http_should_keep_alive(parser);
 	NPN_SetProperty(npp,info.value.objectValue,NPN_GetStringIdentifier("shouldKeepAlive"),&keepAlive);
-
-
 
 	NPVariant* args = new NPVariant;
 	args->type = NPVariantType_Object;

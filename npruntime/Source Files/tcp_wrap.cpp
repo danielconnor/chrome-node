@@ -207,7 +207,6 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 			NPN_GetProperty(m_Instance,params->args[0].value.objectValue,NPN_GetStringIdentifier("offset"),&offset);
 			NPN_GetProperty(m_Instance,params->args[0].value.objectValue,NPN_GetStringIdentifier("length"),&length);
 
-
 			NPN_GetProperty(m_Instance,params->args[0].value.objectValue,NPN_GetStringIdentifier("parent"),&parent);
 			NPN_GetProperty(m_Instance,parent.value.objectValue,NPN_GetStringIdentifier("_handle"),&handle);
 
@@ -234,7 +233,7 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 void TCPWrap::invoke_worker_thread(uv_async_t* handle)
 {
 	InvokeParams* params;
-	if(currentParamRead->next != NULL) {
+	while(currentParamRead->next != NULL) {
 		params = currentParamRead->next;
 		delete currentParamRead;
 		currentParamRead = params;
@@ -273,6 +272,8 @@ bool TCPWrap::bind(NPVariant address, NPVariant port)
 {
 	int c_port = port.value.doubleValue;
 	char* c_address = (char*)realloc((void*)address.value.stringValue.UTF8Characters,address.value.stringValue.UTF8Length);
+
+	// the address must be null terminated
 	c_address[address.value.stringValue.UTF8Length] = '\0';
 
     struct sockaddr_in s_address = uv_ip4_addr(c_address, c_port);
@@ -351,33 +352,28 @@ void OnConnection(uv_stream_t* server, int status)
 
 uv_buf_t OnAlloc(uv_handle_t* handle, size_t suggested_size) 
 {
+	//really should be using buffers here but because it's running in a different
+	//thread I don't know whether it's worth it
 	return uv_buf_init(new char[suggested_size], suggested_size);
 }
 
 void OnRead(uv_stream_t* stream, ssize_t nread, uv_buf_t buf)
 {
 	if(nread >= 0) {
-
-		TCPWrap* tcpWrap = (TCPWrap*)stream->data;
-
-		NPVariant buffer;
-		buffer.type = NPVariantType_String;
-		buffer.value.stringValue.UTF8Characters = buf.base;
-		buffer.value.stringValue.UTF8Length = nread;
-
-		NPVariant offset;
-		offset.type = NPVariantType_Double;
-		offset.value.doubleValue = 0;
-
-		NPVariant length;
-		length.type = NPVariantType_Double;
-		length.value.doubleValue = nread;
-
 		NPVariant* args = new NPVariant[3];
-		args[0] = buffer;
-		args[1] = offset;
-		args[2] = length;
-		
+
+		//buffer
+		args[0].type = NPVariantType_String;
+		args[0].value.stringValue.UTF8Characters = buf.base;
+		args[0].value.stringValue.UTF8Length = nread;
+
+		//offset
+		args[1].type = NPVariantType_Double;
+		args[1].value.doubleValue = 0;
+
+		//length
+		args[2].type = NPVariantType_Double;
+		args[2].value.doubleValue = nread;
 
 		tcpWrap->fireCallback("onread",args,3);
 	}
