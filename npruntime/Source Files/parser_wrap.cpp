@@ -44,9 +44,19 @@ ParserWrap::ParserWrap(NPP instance): ScriptableObject(instance)
 	onmessagecomplete_callback = new NPObject;
 	create_info = new NPObject;
 
-
 	parser = new http_parser;
 	parser->data = this;
+}
+ParserWrap::~ParserWrap()
+{
+	delete onmessagebegin_callback;
+	delete onurl_callback;
+	delete onheaderfield_callback;
+	delete onheadervalue_callback;
+	delete onheaderscomplete_callback;
+	delete onbody_callback;
+	delete onmessagecomplete_callback;
+	delete create_info;
 }
 
 bool ParserWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount, NPVariant *result)

@@ -24,6 +24,7 @@ class ParserWrap : public ScriptableObject {
 public:
 	http_parser* parser;
 	ParserWrap(NPP npp);
+	~ParserWrap();
 
 	bool init(NPVariant type);
 	bool execute(NPVariant buffer,NPVariant start,NPVariant end);
