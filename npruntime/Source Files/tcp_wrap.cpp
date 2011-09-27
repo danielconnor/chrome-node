@@ -3,19 +3,7 @@
 #include "buffer_wrap.h"
 
 NPClass TCPWrap::_npclass = {                              
-  NP_CLASS_STRUCT_VERSION,
-  TCPWrap::Allocate,
-  TCPWrap::_Deallocate,
-  TCPWrap::_Invalidate,
-  TCPWrap::_HasMethod,
-  TCPWrap::_Invoke,
-  TCPWrap::_InvokeDefault,
-  TCPWrap::_HasProperty,
-  TCPWrap::_GetProperty,
-  TCPWrap::_SetProperty,
-  TCPWrap::_RemoveProperty,
-  TCPWrap::_Enumerate,
-  TCPWrap::_Construct
+	CREATE_CLASS(TCPWrap)
 };
 
 uv_async_t TCPWrap::async_handle;

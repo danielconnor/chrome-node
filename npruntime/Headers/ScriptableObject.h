@@ -5,7 +5,22 @@
 #include <string>
 #include <hash_map>
 
+typedef stdext::hash_map <const char*, NPIdentifier> IdentifierMap;
 
+#define CREATE_CLASS(_class)		\
+  NP_CLASS_STRUCT_VERSION,			\
+  _class::Allocate,					\
+  _class::_Deallocate,				\
+  _class::_Invalidate,				\
+  _class::_HasMethod,				\
+  _class::_Invoke,					\
+  _class::_InvokeDefault,			\
+  _class::_HasProperty,				\
+  _class::_GetProperty,				\
+  _class::_SetProperty,				\
+  _class::_RemoveProperty,			\
+  _class::_Enumerate,				\
+  _class::_Construct
 
 
 struct CallbackParams {

@@ -2,19 +2,7 @@
 
 
 NPClass WriteReq::_npclass = {                              
-  NP_CLASS_STRUCT_VERSION,
-  WriteReq::Allocate,
-  WriteReq::_Deallocate,
-  WriteReq::_Invalidate,
-  WriteReq::_HasMethod,
-  WriteReq::_Invoke,
-  WriteReq::_InvokeDefault,
-  WriteReq::_HasProperty,
-  WriteReq::_GetProperty,
-  WriteReq::_SetProperty,
-  WriteReq::_RemoveProperty,
-  WriteReq::_Enumerate,
-  WriteReq::_Construct
+	CREATE_CLASS(WriteReq)
 };
 
 WriteReq::WriteReq(NPP npp) : ScriptableObject(npp) 

@@ -4,20 +4,8 @@
 #include "console.h"
 
 
-NPClass ParserWrap::_npclass = {                              
-  NP_CLASS_STRUCT_VERSION,
-  ParserWrap::Allocate,
-  ParserWrap::_Deallocate,
-  ParserWrap::_Invalidate,
-  ParserWrap::_HasMethod,
-  ParserWrap::_Invoke,
-  ParserWrap::_InvokeDefault,
-  ParserWrap::_HasProperty,
-  ParserWrap::_GetProperty,
-  ParserWrap::_SetProperty,
-  ParserWrap::_RemoveProperty,
-  ParserWrap::_Enumerate,
-  ParserWrap::_Construct
+NPClass ParserWrap::_npclass = {
+	CREATE_CLASS(ParserWrap)
 };
 
 ParserWrap::ParserWrap(NPP instance): ScriptableObject(instance)
@@ -89,8 +77,8 @@ bool ParserWrap::init(NPVariant type)
 }
 bool ParserWrap::execute(NPVariant buffer,NPVariant start,NPVariant end) 
 {
-	uint32_t c_start = start.value.doubleValue;
-	uint32_t c_end = end.value.doubleValue;
+	size_t c_start = start.value.doubleValue;
+	size_t c_end = end.value.doubleValue;
 	
 	NPVariant result;
 	NPN_GetProperty(m_Instance,buffer.value.objectValue,NPN_GetStringIdentifier("_handle"),&result);

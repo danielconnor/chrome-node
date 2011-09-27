@@ -1,19 +1,8 @@
 #include "buffer_wrap.h"
 
-NPClass BufferWrap::_npclass = {                              
-  NP_CLASS_STRUCT_VERSION,
-  BufferWrap::Allocate,
-  BufferWrap::_Deallocate,
-  BufferWrap::_Invalidate,
-  BufferWrap::_HasMethod,
-  BufferWrap::_Invoke,
-  BufferWrap::_InvokeDefault,
-  BufferWrap::_HasProperty,
-  BufferWrap::_GetProperty,
-  BufferWrap::_SetProperty,
-  BufferWrap::_RemoveProperty,
-  BufferWrap::_Enumerate,
-  BufferWrap::_Construct
+
+NPClass BufferWrap::_npclass = {
+	CREATE_CLASS(BufferWrap)
 };
 
 
