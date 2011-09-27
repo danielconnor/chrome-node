@@ -5,6 +5,9 @@
 #include <string>
 #include <hash_map>
 
+
+
+
 struct CallbackParams {
 	NPP npp;
 	NPObject* object;
@@ -12,11 +15,6 @@ struct CallbackParams {
 	int arg_len;
 	const char* name;
 };
-
-typedef stdext::hash_map <const char*, NPIdentifier> IdentifierMap;
-
-
-
 
 static NPVariant* CopyNPVariant(const NPVariant* from) {
   NPVariant* copy = new NPVariant;
@@ -85,6 +83,6 @@ public:
 
     NPP m_Instance;
 
-	IdentifierMap methods;
-	IdentifierMap properties;
+	stdext::hash_map <const char*, NPIdentifier> methods;
+	stdext::hash_map <const char*, NPIdentifier> properties;
 };

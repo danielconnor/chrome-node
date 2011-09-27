@@ -86,27 +86,27 @@ bool BufferWrap::GetProperty(NPIdentifier name, NPVariant *result)
 	return true;
 }
 
-bool BufferWrap::get(NPVariant src,NPVariant* result) 
+bool BufferWrap::get(NPVariant src, NPVariant* result) 
 {
-	uint32_t c_src = src.value.doubleValue;
-
+	size_t c_src = src.value.doubleValue;
+	
 	result->type = NPVariantType_Double;
 	result->value.doubleValue = data[c_src];
 	return true;
 }
 bool BufferWrap::set(NPVariant dest,NPVariant val)
 {
-	uint32_t c_dest = dest.value.doubleValue;
+	size_t c_dest = dest.value.doubleValue;
+
 	char c_val;
-	if(val.type == NPVariantType_String) 
-	{
+
+	if (val.type == NPVariantType_String)
 		c_val = val.value.stringValue.UTF8Characters[0];
-	}
 	else 
-	{
 		c_val = val.value.doubleValue;
-	}
+
 	data[c_dest] = c_val;
+
 	return true;
 }
 bool BufferWrap::utf8Slice(NPVariant start, NPVariant end,NPVariant* string) 
@@ -115,10 +115,10 @@ bool BufferWrap::utf8Slice(NPVariant start, NPVariant end,NPVariant* string)
 	int c_end = end.value.doubleValue;
 	int length = c_end-c_start;
 
-	if(c_end > size || c_end < 0) {
+	if (c_end > size || c_end < 0)
 		c_end = size;
-	}
 
+	//must use NPN_MemAlloc for alocating strings
 	char* result = (char*)NPN_MemAlloc(length);
 	memcpy(result,data + c_start,length);
 
@@ -130,43 +130,25 @@ bool BufferWrap::utf8Slice(NPVariant start, NPVariant end,NPVariant* string)
 }
 bool BufferWrap::asciiSlice(NPVariant start, NPVariant end,NPVariant* string) 
 {
-	int c_start = start.value.doubleValue;
-	int c_end = end.value.doubleValue;
-	int length = c_end-c_start;
-
-	char* result = (char*)NPN_MemAlloc(length);
-	memcpy(result,data+c_start,length);
-
-	string->type = NPVariantType_String;
-	string->value.stringValue.UTF8Characters = result;
-	string->value.stringValue.UTF8Length = length;
-
+	//not yet implemented
 	return true;
 }
 
 bool BufferWrap::asciiWrite(NPVariant string, NPVariant start, NPVariant length,NPVariant* written)
 {
-	char* source = (char*)string.value.stringValue.UTF8Characters;
-	int c_start = start.value.doubleValue;
-	int c_length = length.value.doubleValue;
-	int i = 0;
-	for(; i < size && i < c_length; i++)
-	{
-		data[i + c_start] = source[i];
-	}
-	written->type = NPVariantType_Double;
-	written->value.doubleValue = i;
+	//not yet implemented
 	return true;
 }
 bool BufferWrap::utf8Write(NPVariant string, NPVariant start, NPVariant length,NPVariant* written)
 {
 	char* source = (char*)string.value.stringValue.UTF8Characters;
 
-	int ac_length = string.value.stringValue.UTF8Length;
-	int c_start = start.value.doubleValue;
-	int c_length = length.value.doubleValue;
-	int i = 0;
-	for(; i < size && i < c_length && i < ac_length; i++)
+	size_t ac_length = string.value.stringValue.UTF8Length,
+		   c_start = start.value.doubleValue,
+		   c_length = length.value.doubleValue,
+		   i;
+
+	for(i = 0; i < size && i < c_length && i < ac_length; i++)
 	{
 		data[i + c_start] = source[i];
 	}
@@ -179,14 +161,13 @@ bool BufferWrap::copy(NPVariant target, NPVariant target_start, NPVariant start,
 {
 	BufferWrap* targetWrap = (BufferWrap*)target.value.objectValue;
 	
-	size_t c_target_start = target_start.value.doubleValue;
-	size_t c_start = start.value.doubleValue;
-	size_t c_end = end.value.doubleValue;
+	size_t c_target_start = target_start.value.doubleValue,
+		   c_start = start.value.doubleValue,
+		   c_end = end.value.doubleValue,
+		   length = c_end - c_start;
 
-	size_t length = c_end - c_start;
-
-	c_target_start = (uint32_t)(c_target_start + targetWrap->data);
-	c_start = (uint32_t)(c_start + data);
+	c_target_start = (size_t)(c_target_start + targetWrap->data);
+	c_start = (size_t)(c_start + data);
 
 	memmove((void*)c_target_start,(void*)c_start,length);
 	return true;
