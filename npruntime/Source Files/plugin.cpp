@@ -8,33 +8,9 @@
 #include "npfunctions.h"
 
 //module function names
-static NPIdentifier initialise_function;
-static NPIdentifier bind_function;
-static NPIdentifier listen_function;
 static NPIdentifier new_socket_function;
-static NPIdentifier read_start_function;
-static NPIdentifier read_stop_function;
-static NPIdentifier get_sock_name_function;
-static NPIdentifier close_function;
-static NPIdentifier write_function;
-
 static NPIdentifier new_parser_function;
-static NPIdentifier execute_function;
-static NPIdentifier reinitialise_function;
-
 static NPIdentifier new_buffer_function;
-static NPIdentifier utf8Write_function;
-static NPIdentifier asciiWrite_function;
-static NPIdentifier utf8Slice_function;
-static NPIdentifier asciiSlice_function;
-static NPIdentifier copy_function;
-static NPIdentifier get_function;
-static NPIdentifier set_function;
-static NPIdentifier destroy_function;
-
-
-//module property names
-
 
 class ScriptablePluginObjectBase : public NPObject
 {
@@ -328,29 +304,9 @@ DECLARE_NPOBJECT_CLASS_WITH_BASE(ScriptablePluginObject,
 bool
 ScriptablePluginObject::HasMethod(NPIdentifier name)
 {
-  return name == initialise_function ||
-	     name == bind_function ||
-		 name == listen_function ||
-		 name == new_socket_function ||
-		 name == read_start_function ||
-		 name == read_stop_function ||
-		 name == write_function || 
-		 name == close_function ||
+  return name == new_socket_function ||
 		 name == new_parser_function ||
-		 name == execute_function ||
-		 name == reinitialise_function ||
-
-		 name == new_buffer_function ||
-		 name == utf8Slice_function ||
-		 name == asciiSlice_function ||
-		 name == utf8Write_function ||
-		 name == asciiWrite_function ||
-		 name == copy_function ||
-		 name == get_function ||
-		 name == set_function ||
-		 name == destroy_function;
-			// ||
-		 //name == get_sock_name_function;
+		 name == new_buffer_function;
 }
 
 bool

@@ -194,25 +194,30 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 	{
 		argCount++;
 		WriteReq* w = (WriteReq*)NPN_CreateObject(m_Instance,&WriteReq::_npclass);
+
+
+		// when we get a buffer we have to find the SlowBuffer._handle to access its data
 		if(params->args[0].type == NPVariantType_Object)
 		{
+			// we dont want to delete the buffer because it's a SlowBuffer and might be accessed later
+			// via a Buffer
 			w->retainBuffer = true;
-			NPVariant offset;
-			NPVariant length;
-			NPVariant parent;
-			NPVariant handle;
+			NPVariant offset,length,parent,handle;
 
+			// buffer.offset
 			NPN_GetProperty(m_Instance,params->args[0].value.objectValue,NPN_GetStringIdentifier("offset"),&offset);
+			// buffer.length
 			NPN_GetProperty(m_Instance,params->args[0].value.objectValue,NPN_GetStringIdentifier("length"),&length);
 
+			// buffer.parent
 			NPN_GetProperty(m_Instance,params->args[0].value.objectValue,NPN_GetStringIdentifier("parent"),&parent);
+			// buffer.parent._handle
 			NPN_GetProperty(m_Instance,parent.value.objectValue,NPN_GetStringIdentifier("_handle"),&handle);
-
-			BufferWrap *s = (BufferWrap*)handle.value.objectValue;
 
 			params->args[0].type = NPVariantType_String;
 			params->args[0].value.stringValue.UTF8Length = length.value.doubleValue;
-			params->args[0].value.stringValue.UTF8Characters = s->data + (uint16_t)offset.value.doubleValue;
+			params->args[0].value.stringValue.UTF8Characters = 
+				((BufferWrap*)handle.value.objectValue)->data + (uint16_t)offset.value.doubleValue;
 		}
 		
 		w->init(this);
@@ -220,6 +225,8 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 
 		params->args[argCount - 1].type = NPVariantType_Object;
 		params->args[argCount - 1].value.objectValue = (NPObject*)w;
+
+		//return the write request
 		*result = params->args[argCount - 1];
 	}
 
@@ -231,6 +238,10 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 void TCPWrap::invoke_worker_thread(uv_async_t* handle)
 {
 	InvokeParams* params;
+
+	// if there's a build up of invoke requests handle them all
+	// while you're at it
+	// does same thing as if most of the time
 	while(currentParamRead->next != NULL) {
 		params = currentParamRead->next;
 		delete currentParamRead;
@@ -346,8 +357,8 @@ void OnConnection(uv_stream_t* server, int status)
 
 uv_buf_t OnAlloc(uv_handle_t* handle, size_t suggested_size) 
 {
-	//really should be using buffers here but because it's running in a different
-	//thread I don't know whether it's worth it
+	// really should be using buffers here but because it's running in a different
+	// thread so I don't know whether it's worth it
 	return uv_buf_init(new char[suggested_size], suggested_size);
 }
 

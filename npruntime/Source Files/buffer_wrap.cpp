@@ -1,6 +1,5 @@
 #include "buffer_wrap.h"
 
-
 NPClass BufferWrap::_npclass = {                              
   NP_CLASS_STRUCT_VERSION,
   BufferWrap::Allocate,
@@ -180,9 +179,9 @@ bool BufferWrap::copy(NPVariant target, NPVariant target_start, NPVariant start,
 {
 	BufferWrap* targetWrap = (BufferWrap*)target.value.objectValue;
 	
-	uint32_t c_target_start = target_start.value.doubleValue;
-	uint32_t c_start = start.value.doubleValue;
-	uint32_t c_end = end.value.doubleValue;
+	size_t c_target_start = target_start.value.doubleValue;
+	size_t c_start = start.value.doubleValue;
+	size_t c_end = end.value.doubleValue;
 
 	size_t length = c_end - c_start;
 

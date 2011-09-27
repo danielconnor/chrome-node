@@ -110,7 +110,7 @@ libs.http = function () {
 
         parser.onBody = function (b, start, len) {
             // TODO body encoding?
-            var slice = b; //.slice(start, start + len);
+            var slice = b;
             if (this.incoming._decoder) {
                 var string = this.incoming._decoder.write(slice);
                 if (string.length) this.incoming.emit('data', string);

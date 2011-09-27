@@ -33,12 +33,6 @@ void ExecuteCallback(void* args)
 {	
 	CallbackParams* params = (CallbackParams*)args;
 
-	//kind of hacky - basically I need to keep any PersistantJSHandle on the main thread
-	//because they are stored in an array and seeing as I'm calling back through ExecuteCallback
-	//I might as well do it here instead of messing with Mutexes and stuff
-	//plus I need to remove all that extra garbage with the read buffer, also any string that needs 
-	//to be return gets turned into a buffer...
-
 	for(int i = 0; i < params->arg_len;i++) {
 		if(params->args[i].type == NPVariantType_String) {
 			NPString s = params->args[i].value.stringValue;
