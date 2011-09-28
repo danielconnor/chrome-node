@@ -58,7 +58,7 @@ static NPVariant* CopyNPVariant(const NPVariant* from) {
 
 class ScriptableObject : public NPObject
 {
-protected:
+public:
     virtual void Deallocate();
     virtual void Invalidate();
     virtual bool HasMethod(NPIdentifier name);

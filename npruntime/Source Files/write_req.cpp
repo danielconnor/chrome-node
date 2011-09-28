@@ -18,8 +18,10 @@ WriteReq::WriteReq(NPP npp) : ScriptableObject(npp)
 	cb_callback = new NPObject();
 	retainBuffer = false;
 }
-void WriteReq::init(TCPWrap* socket)
+void WriteReq::init(TCPWrap* socket, NPVariant on_complete, NPVariant cb)
 {
+	SetProperty(properties["oncomplete"],&on_complete);
+	SetProperty(properties["cb"],&cb);
 	this->socket = socket;
 }
 

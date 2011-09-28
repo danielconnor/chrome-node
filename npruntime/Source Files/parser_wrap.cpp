@@ -3,7 +3,6 @@
 
 #include "console.h"
 
-
 NPClass ParserWrap::_npclass = {
 	CREATE_CLASS(ParserWrap)
 };
@@ -193,8 +192,12 @@ int OnHeadersComplete(http_parser* parser)
 	ParserWrap* wrap = (ParserWrap*)parser->data;
 	NPP npp = wrap->m_Instance;
 
-	NPVariant info;
 
+	// this is a bit hacky
+	// we have to create an empty javascript object
+	// so we use a function we created and passed to
+	// the plugin
+	NPVariant info;
 	wrap->apply(wrap->create_info,NULL,0,&info);
 	
 	NPVariant major;

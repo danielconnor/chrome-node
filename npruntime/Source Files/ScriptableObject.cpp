@@ -33,8 +33,10 @@ void ExecuteCallback(void* args)
 {	
 	CallbackParams* params = (CallbackParams*)args;
 
-	for(int i = 0; i < params->arg_len;i++) {
-		if(params->args[i].type == NPVariantType_String) {
+	for(int i = 0; i < params->arg_len;i++) 
+	{
+		if(params->args[i].type == NPVariantType_String) 
+		{
 			NPString s = params->args[i].value.stringValue;
 
 			BufferWrap* b = (BufferWrap*)NPN_CreateObject(params->npp,&BufferWrap::_npclass);
@@ -48,7 +50,7 @@ void ExecuteCallback(void* args)
 	}
 
 	NPVariant result;
-	NPN_Invoke(params->npp,params->object,NPN_GetStringIdentifier(params->name),params->args,params->arg_len,&result);
+	((ScriptableObject*)params->object)->Invoke(NPN_GetStringIdentifier(params->name),params->args,params->arg_len,&result);
 
 	delete[] params->args;
 	delete params;
@@ -66,10 +68,12 @@ void ScriptableObject::fireCallback(const char* name,NPVariant args[],int arg_le
 	params->npp = m_Instance;
 	params->object = (NPObject*)this;
 	params->name = name;
-	if(async) {
+	if(async) 
+	{
 		NPN_PluginThreadAsyncCall(m_Instance, ExecuteCallback, params);
 	}
-	else {
+	else 
+	{
 		NPVariant result;
 		NPN_Invoke(m_Instance,(NPObject*)this,NPN_GetStringIdentifier(name),args,arg_len,&result);
 	}
@@ -104,7 +108,8 @@ bool ScriptableObject::HasMethod(NPIdentifier name)
 
     for (IdentifierMap::iterator hm_Iter = methods.begin( ); hm_Iter != endIter; hm_Iter++)
     {
-		if(hm_Iter->second == name) {
+		if(hm_Iter->second == name) 
+		{
 			return true;
 		}
     }
@@ -126,7 +131,8 @@ bool ScriptableObject::HasProperty(NPIdentifier name)
 
     for (IdentifierMap::iterator hm_Iter = properties.begin( ); hm_Iter != endIter; hm_Iter++)
     {
-		if(hm_Iter->second == name) {
+		if(hm_Iter->second == name) 
+		{
 			return true;
 		}
     }

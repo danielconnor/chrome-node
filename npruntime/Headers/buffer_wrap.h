@@ -18,7 +18,6 @@ public:
 
 	size_t size;
 
-    bool GetProperty(NPIdentifier name, NPVariant *result);
 	
 	bool utf8Slice(NPVariant start, NPVariant end,NPVariant* string); 
 	bool asciiSlice(NPVariant start, NPVariant end,NPVariant* string);
@@ -45,8 +44,10 @@ public:
 
 	static NPObject* Allocate(NPP npp, NPClass *aClass);
 
-	bool HasMethod(NPIdentifier name);
 	bool HasProperty(NPIdentifier name);
+    bool GetProperty(NPIdentifier name, NPVariant *result);
+
+	bool HasMethod(NPIdentifier name);
     bool Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount, NPVariant *result);
 
 };

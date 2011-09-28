@@ -166,31 +166,31 @@ bool BufferWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCo
 {
 	if(name == set_func)
 	{
-		return this->set(args[0],args[1]);
+		return set(args[0],args[1]);
 	}
 	if(name == get_func) 
 	{
-		return this->get(args[0],result);
+		return get(args[0],result);
 	}
 	if(name == asciislice_func) 
 	{
-		return this->asciiSlice(args[0],args[1],result);
+		return asciiSlice(args[0],args[1],result);
 	}
 	if(name == asciiwrite_func) 
 	{
-		return this->asciiWrite(args[0],args[1],args[2],result);
+		return asciiWrite(args[0],args[1],args[2],result);
 	}
 	if(name == utf8slice_func) 
 	{
-		return this->utf8Slice(args[0],args[1],result);
+		return utf8Slice(args[0],args[1],result);
 	}
 	if(name == utf8write_func) 
 	{
-		return this->utf8Write(args[0],args[1],args[2],result);
+		return utf8Write(args[0],args[1],args[2],result);
 	}
 	if(name == copy_func) 
 	{
-		return this->copy(args[0],args[1],args[2],args[3]);
+		return copy(args[0],args[1],args[2],args[3]);
 	}
 	if(name == destroy_func) 
 	{

@@ -7,310 +7,51 @@
 #include "console.h"
 #include "npfunctions.h"
 
-//module function names
-static NPIdentifier new_socket_function;
-static NPIdentifier new_parser_function;
-static NPIdentifier new_buffer_function;
 
-class ScriptablePluginObjectBase : public NPObject
+class ScriptablePluginObject : public ScriptableObject
 {
 public:
-  ScriptablePluginObjectBase(NPP npp)
-    : mNpp(npp)
-  {
-  }
+	ScriptablePluginObject(NPP npp) : ScriptableObject(npp)
+	{
+		new_socket_function = NPN_GetStringIdentifier("createSocket");
+		new_parser_function = NPN_GetStringIdentifier("createParser");
+		new_buffer_function = NPN_GetStringIdentifier("createBuffer");
+	}
 
-  virtual ~ScriptablePluginObjectBase()
-  {
-  }
+    static NPClass _npclass;
 
-  // Virtual NPObject hooks called through this base class. Override
-  // as you see fit.
-  virtual void Invalidate();
-  virtual bool HasMethod(NPIdentifier name);
-  virtual bool Invoke(NPIdentifier name, const NPVariant *args,
-                      uint32_t argCount, NPVariant *result);
-  virtual bool InvokeDefault(const NPVariant *args, uint32_t argCount,
-                             NPVariant *result);
-  virtual bool HasProperty(NPIdentifier name);
-  virtual bool GetProperty(NPIdentifier name, NPVariant *result);
-  virtual bool SetProperty(NPIdentifier name, const NPVariant *value);
-  virtual bool RemoveProperty(NPIdentifier name);
-  virtual bool Enumerate(NPIdentifier **identifier, uint32_t *count);
-  virtual bool Construct(const NPVariant *args, uint32_t argCount,
-                         NPVariant *result);
+	virtual bool HasMethod(NPIdentifier name);
+	virtual bool HasProperty(NPIdentifier name);
+	virtual bool GetProperty(NPIdentifier name, NPVariant *result);
+	virtual bool Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount, NPVariant *result);
+	virtual bool InvokeDefault(const NPVariant *args, uint32_t argCount, NPVariant *result);
 
-public:
-  static void _Deallocate(NPObject *npobj);
-  static void _Invalidate(NPObject *npobj);
-  static bool _HasMethod(NPObject *npobj, NPIdentifier name);
-  static bool _Invoke(NPObject *npobj, NPIdentifier name,
-                      const NPVariant *args, uint32_t argCount,
-                      NPVariant *result);
-  static bool _InvokeDefault(NPObject *npobj, const NPVariant *args,
-                             uint32_t argCount, NPVariant *result);
-  static bool _HasProperty(NPObject * npobj, NPIdentifier name);
-  static bool _GetProperty(NPObject *npobj, NPIdentifier name,
-                           NPVariant *result);
-  static bool _SetProperty(NPObject *npobj, NPIdentifier name,
-                           const NPVariant *value);
-  static bool _RemoveProperty(NPObject *npobj, NPIdentifier name);
-  static bool _Enumerate(NPObject *npobj, NPIdentifier **identifier,
-                         uint32_t *count);
-  static bool _Construct(NPObject *npobj, const NPVariant *args,
-                         uint32_t argCount, NPVariant *result);
+	static NPObject* Allocate(NPP npp, NPClass *aClass);
 
-protected:
-  NPP mNpp;
+	NPIdentifier new_socket_function;
+	NPIdentifier new_parser_function;
+	NPIdentifier new_buffer_function;
 };
 
-#define DECLARE_NPOBJECT_CLASS_WITH_BASE(_class, ctor)                        \
-static NPClass s##_class##_NPClass = {                                        \
-  NP_CLASS_STRUCT_VERSION_CTOR,                                               \
-  ctor,                                                                       \
-  ScriptablePluginObjectBase::_Deallocate,                                    \
-  ScriptablePluginObjectBase::_Invalidate,                                    \
-  ScriptablePluginObjectBase::_HasMethod,                                     \
-  ScriptablePluginObjectBase::_Invoke,                                        \
-  ScriptablePluginObjectBase::_InvokeDefault,                                 \
-  ScriptablePluginObjectBase::_HasProperty,                                   \
-  ScriptablePluginObjectBase::_GetProperty,                                   \
-  ScriptablePluginObjectBase::_SetProperty,                                   \
-  ScriptablePluginObjectBase::_RemoveProperty,                                \
-  ScriptablePluginObjectBase::_Enumerate,                                     \
-  ScriptablePluginObjectBase::_Construct                                      \
-}
-
-#define GET_NPOBJECT_CLASS(_class) &s##_class##_NPClass
-
-void
-ScriptablePluginObjectBase::Invalidate()
-{
-}
-
-bool
-ScriptablePluginObjectBase::HasMethod(NPIdentifier name)
-{
-  return false;
-}
-
-bool
-ScriptablePluginObjectBase::Invoke(NPIdentifier name, const NPVariant *args,
-                                   uint32_t argCount, NPVariant *result)
-{
-  return false;
-}
-
-bool
-ScriptablePluginObjectBase::InvokeDefault(const NPVariant *args,
-                                          uint32_t argCount, NPVariant *result)
-{
-  return false;
-}
-
-bool
-ScriptablePluginObjectBase::HasProperty(NPIdentifier name)
-{
-  return false;
-}
-
-bool
-ScriptablePluginObjectBase::GetProperty(NPIdentifier name, NPVariant *result)
-{
-  return false;
-}
-
-bool
-ScriptablePluginObjectBase::SetProperty(NPIdentifier name,
-                                        const NPVariant *value)
-{
-
-  return false;
-}
-
-bool
-ScriptablePluginObjectBase::RemoveProperty(NPIdentifier name)
-{
-  return false;
-}
-
-bool
-ScriptablePluginObjectBase::Enumerate(NPIdentifier **identifier,
-                                      uint32_t *count)
-{
-  return false;
-}
-
-bool
-ScriptablePluginObjectBase::Construct(const NPVariant *args, uint32_t argCount,
-                                      NPVariant *result)
-{
-  return false;
-}
-
-// static
-void
-ScriptablePluginObjectBase::_Deallocate(NPObject *npobj)
-{
-  // Call the virtual destructor.
-  delete (ScriptablePluginObjectBase *)npobj;
-}
-
-// static
-void
-ScriptablePluginObjectBase::_Invalidate(NPObject *npobj)
-{
-  ((ScriptablePluginObjectBase *)npobj)->Invalidate();
-}
-
-// static
-bool
-ScriptablePluginObjectBase::_HasMethod(NPObject *npobj, NPIdentifier name)
-{
-  return ((ScriptablePluginObjectBase *)npobj)->HasMethod(name);
-}
-
-// static
-bool
-ScriptablePluginObjectBase::_Invoke(NPObject *npobj, NPIdentifier name,
-                                    const NPVariant *args, uint32_t argCount,
-                                    NPVariant *result)
-{
-  return ((ScriptablePluginObjectBase *)npobj)->Invoke(name, args, argCount,
-                                                       result);
-}
-
-// static
-bool
-ScriptablePluginObjectBase::_InvokeDefault(NPObject *npobj,
-                                           const NPVariant *args,
-                                           uint32_t argCount,
-                                           NPVariant *result)
-{
-  return ((ScriptablePluginObjectBase *)npobj)->InvokeDefault(args, argCount,
-                                                              result);
-}
-
-// static
-bool
-ScriptablePluginObjectBase::_HasProperty(NPObject * npobj, NPIdentifier name)
-{
-  return ((ScriptablePluginObjectBase *)npobj)->HasProperty(name);
-}
-
-// static
-bool
-ScriptablePluginObjectBase::_GetProperty(NPObject *npobj, NPIdentifier name,
-                                         NPVariant *result)
-{
-  return ((ScriptablePluginObjectBase *)npobj)->GetProperty(name, result);
-}
-
-// static
-bool
-ScriptablePluginObjectBase::_SetProperty(NPObject *npobj, NPIdentifier name,
-                                         const NPVariant *value)
-{
-  return ((ScriptablePluginObjectBase *)npobj)->SetProperty(name, value);
-}
-
-// static
-bool
-ScriptablePluginObjectBase::_RemoveProperty(NPObject *npobj, NPIdentifier name)
-{
-  return ((ScriptablePluginObjectBase *)npobj)->RemoveProperty(name);
-}
-
-// static
-bool
-ScriptablePluginObjectBase::_Enumerate(NPObject *npobj,
-                                       NPIdentifier **identifier,
-                                       uint32_t *count)
-{
-  return ((ScriptablePluginObjectBase *)npobj)->Enumerate(identifier, count);
-}
-
-// static
-bool
-ScriptablePluginObjectBase::_Construct(NPObject *npobj, const NPVariant *args,
-                                       uint32_t argCount, NPVariant *result)
-{
-  return ((ScriptablePluginObjectBase *)npobj)->Construct(args, argCount,
-                                                          result);
-}
-
-
-class ConstructablePluginObject : public ScriptablePluginObjectBase
-{
-public:
-  ConstructablePluginObject(NPP npp)
-    : ScriptablePluginObjectBase(npp)
-  {
-  }
-
-  virtual bool Construct(const NPVariant *args, uint32_t argCount,
-                         NPVariant *result);
+NPClass ScriptablePluginObject::_npclass = {
+	CREATE_CLASS(ScriptablePluginObject)
 };
 
-static NPObject *
-AllocateConstructablePluginObject(NPP npp, NPClass *aClass)
+
+NPObject* ScriptablePluginObject::Allocate(NPP npp, NPClass *aClass)
 {
-  return new ConstructablePluginObject(npp);
+	return new ScriptablePluginObject(npp);
 }
 
-DECLARE_NPOBJECT_CLASS_WITH_BASE(ConstructablePluginObject,
-                                 AllocateConstructablePluginObject);
 
-bool
-ConstructablePluginObject::Construct(const NPVariant *args, uint32_t argCount,
-                                     NPVariant *result)
+bool ScriptablePluginObject::HasMethod(NPIdentifier name)
 {
-  NPObject *myobj =
-    NPN_CreateObject(mNpp, GET_NPOBJECT_CLASS(ConstructablePluginObject));
-  if (!myobj)
-    return false;
-
-  OBJECT_TO_NPVARIANT(myobj, *result);
-
-  return true;
-}
-
-class ScriptablePluginObject : public ScriptablePluginObjectBase
-{
-public:
-  ScriptablePluginObject(NPP npp)
-    : ScriptablePluginObjectBase(npp)
-  {
-  }
-
-  virtual bool HasMethod(NPIdentifier name);
-  virtual bool HasProperty(NPIdentifier name);
-  virtual bool GetProperty(NPIdentifier name, NPVariant *result);
-  virtual bool Invoke(NPIdentifier name, const NPVariant *args,
-                      uint32_t argCount, NPVariant *result);
-  virtual bool InvokeDefault(const NPVariant *args, uint32_t argCount,
-                             NPVariant *result);
-};
-
-static NPObject *
-AllocateScriptablePluginObject(NPP npp, NPClass *aClass)
-{
-  return new ScriptablePluginObject(npp);
-}
-
-DECLARE_NPOBJECT_CLASS_WITH_BASE(ScriptablePluginObject,
-                                 AllocateScriptablePluginObject);
-
-bool
-ScriptablePluginObject::HasMethod(NPIdentifier name)
-{
-  return name == new_socket_function ||
+	return name == new_socket_function ||
 		 name == new_parser_function ||
 		 name == new_buffer_function;
 }
 
-bool
-ScriptablePluginObject::HasProperty(NPIdentifier name)
+bool ScriptablePluginObject::HasProperty(NPIdentifier name)
 {
 	return false;
 }
@@ -326,19 +67,19 @@ bool ScriptablePluginObject::Invoke(NPIdentifier name, const NPVariant *args,
 	result->type = NPVariantType_Object;
 	if(name == new_socket_function) 
 	{
-		TCPWrap* w = (TCPWrap*)NPN_CreateObject(mNpp,&TCPWrap::_npclass);
+		TCPWrap* w = (TCPWrap*)NPN_CreateObject(m_Instance,&TCPWrap::_npclass);
 		w->init();
 		result->value.objectValue = (NPObject*)w;
 	}
 	if(name == new_parser_function)
 	{
-		ParserWrap* p = (ParserWrap*)NPN_CreateObject(mNpp,&ParserWrap::_npclass);
+		ParserWrap* p = (ParserWrap*)NPN_CreateObject(m_Instance,&ParserWrap::_npclass);
 		p->init(args[0]);
 		result->value.objectValue = (NPObject*)p;
 	}
 	if(name == new_buffer_function) 
 	{
-		BufferWrap* b = (BufferWrap*)NPN_CreateObject(mNpp,&BufferWrap::_npclass);
+		BufferWrap* b = (BufferWrap*)NPN_CreateObject(m_Instance,&BufferWrap::_npclass);
 		b->init(args[0].value.doubleValue);
 		result->value.objectValue = (NPObject*)b;
 	}
@@ -348,12 +89,9 @@ bool ScriptablePluginObject::Invoke(NPIdentifier name, const NPVariant *args,
 	return true;
 }
 
-
-
-bool
-ScriptablePluginObject::InvokeDefault(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ScriptablePluginObject::InvokeDefault(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
-  return true;
+	return true;
 }
 
 CPlugin::CPlugin(NPP pNPInstance) :
@@ -364,63 +102,55 @@ CPlugin::CPlugin(NPP pNPInstance) :
 {
 	NPN_GetValue(m_pNPInstance, NPNVWindowNPObject, &sWindowObj);
 
-	new_socket_function =	 NPN_GetStringIdentifier("createSocket");
-	new_parser_function =    NPN_GetStringIdentifier("createParser");
-	new_buffer_function =	 NPN_GetStringIdentifier("createBuffer");
-
+	// initialise uv and set up inter-thread communication
 	uv_init();
 	uv_async_init(&TCPWrap::async_handle, (uv_async_cb)TCPWrap::invoke_worker_thread);
-
 	CreateThread(NULL,0,TCPWrap::run_uv,NULL,0,NULL);
-
 }
 
 CPlugin::~CPlugin()
 {
 	if (sWindowObj)
 		NPN_ReleaseObject(sWindowObj);
+
 	if (m_pScriptableObject)
 		NPN_ReleaseObject(m_pScriptableObject);
-
 }
 
 
 void CPlugin::shut()
 {
-  m_bInitialized = false;
+	m_bInitialized = false;
 }
 
 NPBool CPlugin::isInitialized()
 {
-  return m_bInitialized;
+	return m_bInitialized;
 }
 
 int16_t CPlugin::handleEvent(void* event)
 {
-  return 0;
+	return 0;
 }
 
 void CPlugin::getVersion(char* *aVersion)
 {
-  const char *ua = NPN_UserAgent(m_pNPInstance);
-  char*& version = *aVersion;
-  version = (char*)NPN_MemAlloc(1 + strlen(ua));
-  if (version)
-    strcpy(version, ua);
+	const char *ua = NPN_UserAgent(m_pNPInstance);
+	char*& version = *aVersion;
+	version = (char*)NPN_MemAlloc(1 + strlen(ua));
+	if (version)
+		strcpy(version, ua);
 }
 
-NPObject *
-CPlugin::GetScriptableObject()
+NPObject *CPlugin::GetScriptableObject()
 {
-  if (!m_pScriptableObject) {
-    m_pScriptableObject =
-      NPN_CreateObject(m_pNPInstance,
-                       GET_NPOBJECT_CLASS(ScriptablePluginObject));
-  }
+	if (!m_pScriptableObject) {
+		m_pScriptableObject = NPN_CreateObject(m_pNPInstance, &ScriptablePluginObject::_npclass);
+	}
 
-  if (m_pScriptableObject) {
-    NPN_RetainObject(m_pScriptableObject);
-  }
+	if (m_pScriptableObject) {
+		NPN_RetainObject(m_pScriptableObject);
+	}
 
-  return m_pScriptableObject;
+	return m_pScriptableObject;
 }

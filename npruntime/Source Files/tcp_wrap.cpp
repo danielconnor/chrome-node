@@ -208,7 +208,7 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 				((BufferWrap*)handle.value.objectValue)->data + (uint16_t)offset.value.doubleValue;
 		}
 		
-		w->init(this);
+		w->init(this,args[1],args[2]);
 		NPN_RetainObject((NPObject*)w);
 
 		params->args[argCount - 1].type = NPVariantType_Object;
@@ -388,7 +388,7 @@ void OnWrite(uv_write_t* write_req, int status)
 
 	req->fireCallback("oncomplete",args,3);
 	if(!req->retainBuffer) {
-		delete[] req->data;
+		//delete[] req->data;
 	}
 }
 void OnClose(uv_stream_t* stream)

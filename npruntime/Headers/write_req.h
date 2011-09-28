@@ -12,7 +12,7 @@ public:
 	uv_write_t* write_req;
 	WriteReq(NPP instance);
 
-	void init(TCPWrap* socket);
+	void init(TCPWrap* socket,NPVariant on_complete, NPVariant cb);
 
 	// callbacks
 	NPObject* oncomplete_callback;

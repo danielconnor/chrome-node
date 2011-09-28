@@ -371,14 +371,16 @@ libs.net = function () {
         }
 
 
-        var writeReq = this._handle.write(data);
+        //changed this to pass callbacks with write function
+        //because if data is too short they get called before they are set
+        var writeReq = this._handle.write(data, afterWrite, cb);
         if (!writeReq) {
             //this.destroy(errnoException(errno, 'write'));
             return false;
         }
 
-        writeReq.oncomplete = afterWrite;
-        writeReq.cb = cb;
+        //writeReq.oncomplete = afterWrite;
+        //writeReq.cb = cb;
         this._writeRequests.push(writeReq);
 
         return this._handle.writeQueueSize == 0;
