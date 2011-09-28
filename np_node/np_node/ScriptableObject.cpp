@@ -50,6 +50,10 @@ void ExecuteCallback(void* args)
 	}
 
 	NPVariant result;
+
+	//calls Invoke directly instead of NPN_Invoke
+	//doesn't need to call NPN_HasMethod along the way because we know
+	//it exists already
 	((ScriptableObject*)params->object)->Invoke(NPN_GetStringIdentifier(params->name),params->args,params->arg_len,&result);
 
 	delete[] params->args;

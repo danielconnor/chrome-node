@@ -3,9 +3,7 @@
 
 #include "console.h"
 
-NPClass ParserWrap::_npclass = {
-	CREATE_CLASS(ParserWrap)
-};
+CREATE_CLASS(ParserWrap);
 
 ParserWrap::ParserWrap(NPP instance): ScriptableObject(instance)
 {

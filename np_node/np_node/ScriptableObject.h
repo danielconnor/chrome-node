@@ -8,6 +8,7 @@
 typedef stdext::hash_map <const char*, NPIdentifier> IdentifierMap;
 
 #define CREATE_CLASS(_class)		\
+NPClass _class::_npclass = {       \
   NP_CLASS_STRUCT_VERSION,			\
   _class::Allocate,					\
   _class::_Deallocate,				\
@@ -20,7 +21,8 @@ typedef stdext::hash_map <const char*, NPIdentifier> IdentifierMap;
   _class::_SetProperty,				\
   _class::_RemoveProperty,			\
   _class::_Enumerate,				\
-  _class::_Construct
+  _class::_Construct				\
+}
 
 
 struct CallbackParams {

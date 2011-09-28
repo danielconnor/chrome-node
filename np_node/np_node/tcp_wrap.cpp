@@ -2,9 +2,8 @@
 #include "write_req.h"
 #include "buffer_wrap.h"
 
-NPClass TCPWrap::_npclass = {                              
-	CREATE_CLASS(TCPWrap)
-};
+
+	CREATE_CLASS(TCPWrap);
 
 uv_async_t TCPWrap::async_handle;
 

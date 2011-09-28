@@ -1,9 +1,7 @@
 #include "write_req.h"
 
 
-NPClass WriteReq::_npclass = {                              
-	CREATE_CLASS(WriteReq)
-};
+CREATE_CLASS(WriteReq);
 
 WriteReq::WriteReq(NPP npp) : ScriptableObject(npp) 
 {

@@ -1,10 +1,7 @@
 #include "buffer_wrap.h"
 
 
-NPClass BufferWrap::_npclass = {
-	CREATE_CLASS(BufferWrap)
-};
-
+CREATE_CLASS(BufferWrap);
 
 NPObject *BufferWrap::Allocate(NPP npp, NPClass *aClass)
 {

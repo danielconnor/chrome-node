@@ -33,9 +33,7 @@ public:
 	NPIdentifier new_buffer_function;
 };
 
-NPClass ScriptablePluginObject::_npclass = {
-	CREATE_CLASS(ScriptablePluginObject)
-};
+CREATE_CLASS(ScriptablePluginObject);
 
 
 NPObject* ScriptablePluginObject::Allocate(NPP npp, NPClass *aClass)
@@ -84,7 +82,6 @@ bool ScriptablePluginObject::Invoke(NPIdentifier name, const NPVariant *args,
 		result->value.objectValue = (NPObject*)b;
 	}
 	NPN_RetainObject(result->value.objectValue);
-
 
 	return true;
 }

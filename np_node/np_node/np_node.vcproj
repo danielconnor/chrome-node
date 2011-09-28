@@ -1,12 +1,11 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="npruntime"
-	ProjectGUID="{99285709-FAD9-4B99-9525-1574D66223E5}"
-	RootNamespace="npruntime"
-	Keyword="Win32Proj"
-	TargetFrameworkVersion="0"
+	Name="np_node"
+	ProjectGUID="{61E1B34D-F62E-4E1D-AD2D-26E8045E3937}"
+	Keyword="AtlProj"
+	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
 		<Platform
@@ -18,9 +17,12 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\dll"
-			IntermediateDirectory="Debug"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
+			UseOfATL="2"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -36,37 +38,49 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="false"
+				TargetEnvironment="1"
+				GenerateStublessProxies="true"
+				TypeLibraryName="$(IntDir)/np_node.tlb"
+				HeaderFileName="np_node_i.h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="np_node_i.c"
+				ProxyFileName="np_node_p.c"
+				ValidateParameters="true"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Node\joyent-node-790f13d\deps\uv\include&quot;;.\Headers;.\libTrie;&quot;D:\Libraries\xulrunner-sdk\include&quot;;&quot;C:\Node\joyent-node-790f13d\deps\http_parser&quot;"
+				AdditionalIncludeDirectories="&quot;C:\Node\joyent-node-790f13d\deps\uv\include&quot;;&quot;D:\Libraries\xulrunner-sdk\include&quot;;&quot;C:\Node\joyent-node-790f13d\deps\http_parser&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;NPRUNTIME_EXPORTS;XP_WIN32;MOZILLA_STRICT_API;XPCOM_GLUE;XP_WIN;_X86_;NPSIMPLE_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
-				CallingConvention="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+				AdditionalIncludeDirectories="$(IntDir)"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				RegisterOutput="false"
+				IgnoreImportLibrary="false"
 				AdditionalDependencies="http_parser.lib uv.lib ws2_32.lib wldap32.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;C:\Node\joyent-node-790f13d\deps\http_parser\Debug&quot;;&quot;C:\Node\joyent-node-790f13d\deps\uv\Debug\&quot;"
-				ModuleDefinitionFile="./nprt.def"
-				AddModuleNamesToAssembly=""
+				ModuleDefinitionFile=".\np_node.def"
 				GenerateDebugInformation="true"
 				MapExports="true"
 				SubSystem="2"
@@ -96,9 +110,12 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\dll"
-			IntermediateDirectory="Release"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
+			UseOfATL="2"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -114,41 +131,45 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="false"
+				TargetEnvironment="1"
+				GenerateStublessProxies="true"
+				TypeLibraryName="$(IntDir)/np_node.tlb"
+				HeaderFileName="np_node_i.h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="np_node_i.c"
+				ProxyFileName="np_node_p.c"
+				ValidateParameters="true"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
-				InlineFunctionExpansion="0"
-				EnableIntrinsicFunctions="false"
-				FavorSizeOrSpeed="0"
-				OmitFramePointers="false"
-				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="&quot;C:\Node\joyent-node-790f13d\deps\http_parser&quot;"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_USRDLL;NPRUNTIME_EXPORTS;XP_WIN32;MOZILLA_STRICT_API;XPCOM_GLUE;XP_WIN;_X86_;NPSIMPLE_EXPORTS"
-				MinimalRebuild="true"
+				Optimization="2"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="0"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+				AdditionalIncludeDirectories="$(IntDir)"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib wldap32.lib uv.lib"
-				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;C:\Node\joyent-node-790f13d\deps\uv\Release\&quot;"
-				ModuleDefinitionFile="./nprt.def"
-				GenerateDebugInformation="false"
-				MapExports="true"
+				RegisterOutput="true"
+				IgnoreImportLibrary="true"
+				LinkIncremental="1"
+				ModuleDefinitionFile=".\np_node.def"
+				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -181,115 +202,120 @@
 	</References>
 	<Files>
 		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
-			>
-			<File
-				RelativePath=".\Headers\buffer_wrap.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Headers\console.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Source Files\js_handle.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Headers\npplat.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Source Files\parser_wrap.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Headers\parser_wrap.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Source Files\persistant_js_handle.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Headers\plugin.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Resources\resource.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Headers\ScriptableObject.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Headers\stdint.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Headers\tcp_wrap.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Headers\write_req.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
-			<File
-				RelativePath=".\Resources\nprt.rc"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Source Files\buffer_wrap.cpp"
+				RelativePath=".\buffer_wrap.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Source Files\np_entry.cpp"
+				RelativePath=".\np_entry.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Source Files\npn_gate.cpp"
+				RelativePath=".\np_node.def"
 				>
 			</File>
 			<File
-				RelativePath=".\Source Files\npp_gate.cpp"
+				RelativePath=".\npn_gate.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Source Files\parser_wrap.cpp"
+				RelativePath=".\npp_gate.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Source Files\plugin.cpp"
+				RelativePath=".\parser_wrap.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Source Files\ScriptableObject.cpp"
+				RelativePath=".\plugin.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Source Files\tcp_wrap.cpp"
+				RelativePath=".\ScriptableObject.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Source Files\write_req.cpp"
+				RelativePath=".\tcp_wrap.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\write_req.cpp"
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
+			<File
+				RelativePath=".\buffer_wrap.h"
+				>
+			</File>
+			<File
+				RelativePath=".\console.h"
+				>
+			</File>
+			<File
+				RelativePath=".\npplat.h"
+				>
+			</File>
+			<File
+				RelativePath=".\parser_wrap.h"
+				>
+			</File>
+			<File
+				RelativePath=".\plugin.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ScriptableObject.h"
+				>
+			</File>
+			<File
+				RelativePath=".\stdint.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tcp_wrap.h"
+				>
+			</File>
+			<File
+				RelativePath=".\write_req.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Resource Files"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
+			<File
+				RelativePath=".\np_node.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\np_node.rgs"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Generated Files"
+			SourceControlFiles="false"
+			>
+		</Filter>
+		<File
+			RelativePath=".\ReadMe.txt"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
