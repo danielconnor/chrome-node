@@ -8,7 +8,7 @@
 		"default_title": "Sample"
 	},
 	"plugins": [
-		{ "path": "dll/npruntime.dll"}
+		{ "path": "dll/np_node.dll"}
 	],
 	"permissions": [
 		"http://*/*", 
