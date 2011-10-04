@@ -48,11 +48,11 @@ BEGIN
             VALUE "FileExtents", "rts"
             VALUE "FileOpenName", "nprt"
             VALUE "FileVersion", "0, 5, 0, 0"
-            VALUE "InternalName", "Socket"
-            VALUE "LegalCopyright", "Copyright © 2011"
+            VALUE "InternalName", "ChromeNode"
+            VALUE "LegalCopyright", "Copyright © Pixlcoder 2011"
             VALUE "MIMEType", "application/x-node"
             VALUE "OriginalFilename", "nprt.dll"
-            VALUE "ProductName", "Socket"
+            VALUE "ProductName", "ChromeNode"
             VALUE "ProductVersion", "0, 5, 0, 0"
         END
     END

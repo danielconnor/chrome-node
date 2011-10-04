@@ -7,31 +7,42 @@ WriteReq::WriteReq(NPP npp) : ScriptableObject(npp)
 {
 	this->write_req = new uv_write_t;
 	write_req->data = this;
-	addProperty("oncomplete");
-	addMethod("oncomplete");
-	addProperty("cb");
-	addMethod("cb");
+
+	oncomplete_func = NPN_GetStringIdentifier("oncomplete");
+	cb_func = NPN_GetStringIdentifier("cb");
 
 	oncomplete_callback = new NPObject();
 	cb_callback = new NPObject();
+
 	retainBuffer = false;
 }
 void WriteReq::init(TCPWrap* socket, NPVariant on_complete, NPVariant cb)
 {
-	SetProperty(properties["oncomplete"],&on_complete);
-	SetProperty(properties["cb"],&cb);
+	SetProperty(oncomplete_func,&on_complete);
+	SetProperty(cb_func,&cb);
 	this->socket = socket;
+}
+
+bool WriteReq::HasProperty(NPIdentifier name)
+{
+	return name == oncomplete_func ||
+			name == cb_func;
+}
+bool WriteReq::HasMethod(NPIdentifier name)
+{
+	return name == oncomplete_func ||
+			name == cb_func;
 }
 
 bool WriteReq::GetProperty(NPIdentifier name, NPVariant *result)
 {
 	result->type = NPVariantType_Object;
-	if(name == properties["cb"] && cb_callback->_class != NULL) 
+	if(name == cb_func && cb_callback->_class != NULL) 
 	{
 		result->value.objectValue = cb_callback;
 		return true;
 	}
-	else if(name == properties["oncomplete"] && oncomplete_callback->_class != NULL) 
+	else if(name == oncomplete_func && oncomplete_callback->_class != NULL) 
 	{
 		result->value.objectValue = oncomplete_callback;
 		return true;
@@ -47,13 +58,13 @@ bool WriteReq::SetProperty(NPIdentifier name, const NPVariant *value)
 {
 	if(value->type == NPVariantType_Object) 
 	{
-		if(name == properties["cb"]) 
+		if(name == cb_func) 
 		{
 			NPN_ReleaseObject(cb_callback);
 			cb_callback = value->value.objectValue;
 			NPN_RetainObject(cb_callback);
 		}
-		if(name == properties["oncomplete"]) 
+		if(name == oncomplete_func) 
 		{
 			NPN_ReleaseObject(oncomplete_callback);
 			oncomplete_callback = value->value.objectValue;
@@ -64,11 +75,11 @@ bool WriteReq::SetProperty(NPIdentifier name, const NPVariant *value)
 }
 bool WriteReq::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
-	if(name == methods["cb"]) 
+	if(name == cb_func) 
 	{
 		NPN_InvokeDefault(m_Instance,cb_callback,args,argCount,result);
 	}
-	if(name == methods["oncomplete"]) 
+	if(name == oncomplete_func) 
 	{	
 		NPN_InvokeDefault(m_Instance,oncomplete_callback,args,argCount,result);
 	}

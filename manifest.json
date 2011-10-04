@@ -4,7 +4,7 @@
 	"description": "A socket server that runs in your browser",
 	"background_page": "background.html",
 	"browser_action": {
-		"default_icon": "logo.png",
+		"default_icon": "graphics/c-node_small.png",
 		"default_title": "Sample"
 	},
 	"plugins": [

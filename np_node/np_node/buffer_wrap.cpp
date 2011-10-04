@@ -25,31 +25,14 @@ bool BufferWrap::HasProperty(NPIdentifier name)
 }
 BufferWrap::BufferWrap (NPP instance): ScriptableObject(instance)
 {
-	addMethod("get");
 	get_func = NPN_GetStringIdentifier("get");
-
-	addMethod("set");
 	set_func = NPN_GetStringIdentifier("set");
-
-	addMethod("asciiSlice");
 	asciislice_func = NPN_GetStringIdentifier("asciiSlice");
-
-	addMethod("asciiWrite");
 	asciiwrite_func = NPN_GetStringIdentifier("asciiWrite");
-
-	addMethod("utf8Slice");
 	utf8slice_func =  NPN_GetStringIdentifier("utf8Slice");
-
-	addMethod("utf8Write");
 	utf8write_func =  NPN_GetStringIdentifier("utf8Write");
-
-	addMethod("copy");
 	copy_func =  NPN_GetStringIdentifier("copy");
-
-	addMethod("destroy");
 	destroy_func =  NPN_GetStringIdentifier("destroy");
-
-	addProperty("length");
 	size_prop =  NPN_GetStringIdentifier("length");
 }
 void BufferWrap::init(size_t length)
@@ -67,14 +50,14 @@ bool BufferWrap::GetProperty(NPIdentifier name, NPVariant *result)
 	if(name == size_prop)
 	{
 		result->type = NPVariantType_Double;
-		result->value.doubleValue = size;
+		result->value.doubleValue = static_cast<double>(size);
 	}
 	return true;
 }
 
 bool BufferWrap::get(NPVariant src, NPVariant* result) 
 {
-	size_t c_src = src.value.doubleValue;
+	size_t c_src = static_cast<size_t>(src.value.doubleValue);
 	
 	result->type = NPVariantType_Double;
 	result->value.doubleValue = data[c_src];
@@ -82,14 +65,14 @@ bool BufferWrap::get(NPVariant src, NPVariant* result)
 }
 bool BufferWrap::set(NPVariant dest,NPVariant val)
 {
-	size_t c_dest = dest.value.doubleValue;
+	size_t c_dest = static_cast<size_t>(dest.value.doubleValue);
 
 	char c_val;
 
 	if (val.type == NPVariantType_String)
-		c_val = val.value.stringValue.UTF8Characters[0];
+		c_val = static_cast<char>(val.value.stringValue.UTF8Characters[0]);
 	else 
-		c_val = val.value.doubleValue;
+		c_val = static_cast<char>(val.value.doubleValue);
 
 	data[c_dest] = c_val;
 
@@ -97,14 +80,15 @@ bool BufferWrap::set(NPVariant dest,NPVariant val)
 }
 bool BufferWrap::utf8Slice(NPVariant start, NPVariant end,NPVariant* string) 
 {
-	int c_start = start.value.doubleValue;
-	int c_end = end.value.doubleValue;
-	int length = c_end-c_start;
+	size_t c_start = static_cast<size_t>(start.value.doubleValue),
+		   c_end = static_cast<size_t>(end.value.doubleValue);
+	size_t length = c_end-c_start;
 
 	if (c_end > size || c_end < 0)
 		c_end = size;
 
-	//must use NPN_MemAlloc for alocating strings
+	// must use NPN_MemAlloc for alocating strings
+	// that are being passed back to the browser
 	char* result = (char*)NPN_MemAlloc(length);
 	memcpy(result,data + c_start,length);
 
@@ -129,9 +113,9 @@ bool BufferWrap::utf8Write(NPVariant string, NPVariant start, NPVariant length,N
 {
 	char* source = (char*)string.value.stringValue.UTF8Characters;
 
-	size_t ac_length = string.value.stringValue.UTF8Length,
-		   c_start = start.value.doubleValue,
-		   c_length = length.value.doubleValue,
+	size_t ac_length = static_cast<size_t>(string.value.stringValue.UTF8Length),
+		   c_start = static_cast<size_t>(start.value.doubleValue),
+		   c_length = static_cast<size_t>(length.value.doubleValue),
 		   i;
 
 	for(i = 0; i < size && i < c_length && i < ac_length; i++)
@@ -147,10 +131,10 @@ bool BufferWrap::copy(NPVariant target, NPVariant target_start, NPVariant start,
 {
 	BufferWrap* targetWrap = (BufferWrap*)target.value.objectValue;
 	
-	size_t c_target_start = target_start.value.doubleValue,
-		   c_start = start.value.doubleValue,
-		   c_end = end.value.doubleValue,
-		   length = c_end - c_start;
+	size_t c_target_start = static_cast<size_t>(target_start.value.doubleValue),
+		   c_start = static_cast<size_t>(start.value.doubleValue),
+		   c_end = static_cast<size_t>(end.value.doubleValue),
+		   length = static_cast<size_t>(c_end - c_start);
 
 	c_target_start = (size_t)(c_target_start + targetWrap->data);
 	c_start = (size_t)(c_start + data);

@@ -78,7 +78,7 @@ bool ScriptablePluginObject::Invoke(NPIdentifier name, const NPVariant *args,
 	if(name == new_buffer_function) 
 	{
 		BufferWrap* b = (BufferWrap*)NPN_CreateObject(m_Instance,&BufferWrap::_npclass);
-		b->init(args[0].value.doubleValue);
+		b->init(static_cast<size_t>(args[0].value.doubleValue));
 		result->value.objectValue = (NPObject*)b;
 	}
 	NPN_RetainObject(result->value.objectValue);

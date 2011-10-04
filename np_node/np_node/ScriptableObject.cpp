@@ -7,26 +7,9 @@
 #include "buffer_wrap.h"
 #include "plugin.h"
 
-
-using namespace std;
-
 ScriptableObject::ScriptableObject (NPP instance) 
 {
 	this->m_Instance = instance;
-}
-
-void ScriptableObject::addMethod(char* name) 
-{
-	methods[name] = NPN_GetStringIdentifier(name);
-}
-void ScriptableObject::addProperty(char* name) 
-{
-	properties[name] = NPN_GetStringIdentifier(name);
-}
-void ScriptableObject::addCallback(char* name) 
-{
-	addMethod(name);
-	addProperty(name);
 }
 
 void ExecuteCallback(void* args) 
@@ -108,15 +91,6 @@ void ScriptableObject::Invalidate()
 
 bool ScriptableObject::HasMethod(NPIdentifier name)
 {
-	IdentifierMap::iterator endIter = methods.end();
-
-    for (IdentifierMap::iterator hm_Iter = methods.begin( ); hm_Iter != endIter; hm_Iter++)
-    {
-		if(hm_Iter->second == name) 
-		{
-			return true;
-		}
-    }
 	return false;
 }
 bool ScriptableObject::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount, NPVariant *result)
@@ -131,15 +105,6 @@ bool ScriptableObject::InvokeDefault(const NPVariant *args, uint32_t argCount, N
 
 bool ScriptableObject::HasProperty(NPIdentifier name)
 {
-	IdentifierMap::iterator endIter = properties.end();
-
-    for (IdentifierMap::iterator hm_Iter = properties.begin( ); hm_Iter != endIter; hm_Iter++)
-    {
-		if(hm_Iter->second == name) 
-		{
-			return true;
-		}
-    }
 	return false;
 }
 

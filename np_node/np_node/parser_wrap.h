@@ -30,21 +30,35 @@ public:
 	bool execute(NPVariant buffer,NPVariant start,NPVariant end);
 	
 
-    bool Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount, NPVariant *result);
-
+	bool HasMethod(NPIdentifier name);
+	bool Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount, NPVariant *result);
+    bool HasProperty(NPIdentifier name);
     bool SetProperty(NPIdentifier name, const NPVariant *value);
-	
+
 	// callbacks
-	NPObject* onmessagebegin_callback;
-	NPObject* onurl_callback;
-	NPObject* onheaderfield_callback;
-	NPObject* onheadervalue_callback;
-	NPObject* onheaderscomplete_callback;
-	NPObject* onbody_callback;
-	NPObject* onmessagecomplete_callback;
+	NPObject *onmessagebegin_callback;
+	NPObject *onurl_callback;
+	NPObject *onheaderfield_callback;
+	NPObject *onheadervalue_callback;
+	NPObject *onheaderscomplete_callback;
+	NPObject *onbody_callback;
+	NPObject *onmessagecomplete_callback;
 
-	NPObject* create_info;
+	// holds a javascript function which creates a blank object
+	NPObject *create_info;
 
+	NPIdentifier createinfo_prop;
+	
+	NPIdentifier onmessagebegin_func;
+	NPIdentifier onurl_func;
+	NPIdentifier onheaderfield_func;
+	NPIdentifier onheadervalue_func;
+	NPIdentifier onheaderscomplete_func;
+	NPIdentifier onbody_func;
+	NPIdentifier onmessagecomplete_func;
+
+	NPIdentifier reinitialise_func;
+	NPIdentifier execute_func;
 
 	static NPClass _npclass;
 	static NPObject *Allocate(NPP npp, NPClass *aClass);

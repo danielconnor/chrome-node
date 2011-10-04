@@ -7,18 +7,18 @@ CREATE_CLASS(ParserWrap);
 
 ParserWrap::ParserWrap(NPP instance): ScriptableObject(instance)
 {
-	addMethod("execute");
-	addMethod("reinitialize");
+	execute_func = NPN_GetStringIdentifier("execute");
+	reinitialise_func = NPN_GetStringIdentifier("reinitialize");
 
-	addCallback("onMessageBegin");
-	addCallback("onURL");
-	addCallback("onHeaderField");
-	addCallback("onHeaderValue");
-	addCallback("onHeadersComplete");
-	addCallback("onBody");
-	addCallback("onMessageComplete");
+	onmessagebegin_func = NPN_GetStringIdentifier("onMessageBegin");
+	onurl_func = NPN_GetStringIdentifier("onURL");
+	onheaderfield_func = NPN_GetStringIdentifier("onHeaderField");
+	onheadervalue_func = NPN_GetStringIdentifier("onHeaderValue");
+	onheaderscomplete_func = NPN_GetStringIdentifier("onHeadersComplete");
+	onbody_func = NPN_GetStringIdentifier("onBody");
+	onmessagecomplete_func = NPN_GetStringIdentifier("onMessageComplete");
 
-	addProperty("createInfo");
+	createinfo_prop = NPN_GetStringIdentifier("createInfo");
 
 	onmessagebegin_callback = new NPObject;
 	onurl_callback = new NPObject;
@@ -46,11 +46,11 @@ ParserWrap::~ParserWrap()
 
 bool ParserWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
-	if(name == methods["execute"]) 
+	if(name == execute_func) 
 	{
 		return execute(args[0],args[1],args[2]);
 	}
-	if(name == methods["reinitialize"]) 
+	if(name == reinitialise_func) 
 	{
 		return init(args[0]);
 	}
@@ -74,8 +74,8 @@ bool ParserWrap::init(NPVariant type)
 }
 bool ParserWrap::execute(NPVariant buffer,NPVariant start,NPVariant end) 
 {
-	size_t c_start = start.value.doubleValue;
-	size_t c_end = end.value.doubleValue;
+	size_t c_start = static_cast<size_t>(start.value.doubleValue),
+		   c_end = static_cast<size_t>(end.value.doubleValue);
 	
 	NPVariant result;
 	NPN_GetProperty(m_Instance,buffer.value.objectValue,NPN_GetStringIdentifier("_handle"),&result);
@@ -87,39 +87,58 @@ bool ParserWrap::execute(NPVariant buffer,NPVariant start,NPVariant end)
 	return true;
 }
 
+bool ParserWrap::HasMethod(NPIdentifier name)
+{
+	return name == reinitialise_func ||
+		   name == execute_func;
+}
+
+bool ParserWrap::HasProperty(NPIdentifier name) 
+{
+	return name == createinfo_prop ||
+			name == onmessagebegin_func ||
+			name == onurl_func ||
+			name == onheaderfield_func ||
+			name == onheadervalue_func ||
+			name == onheaderscomplete_func ||
+			name == onbody_func ||
+			name == onmessagecomplete_func;
+}
+
+
 bool ParserWrap::SetProperty(NPIdentifier name, const NPVariant *value)
 {
 	NPObject** callback;
 
-	if(name == properties["onMessageBegin"])
+	if(name == onmessagebegin_func)
 	{
 		callback = &onmessagebegin_callback;
 	}
-	if(name == properties["onURL"])
+	if(name == onurl_func)
 	{
 		callback = &onurl_callback;
 	}
-	if(name == properties["onHeaderField"])
+	if(name == onheaderfield_func)
 	{
 		callback = &onheaderfield_callback;
 	}
-	if(name == properties["onHeaderValue"])
+	if(name == onheadervalue_func)
 	{
 		callback = &onheadervalue_callback;
 	}
-	if(name == properties["onHeadersComplete"])
+	if(name == onheaderscomplete_func)
 	{
 		callback = &onheaderscomplete_callback;
 	}
-	if(name == properties["onBody"])
+	if(name == onbody_func)
 	{
 		callback = &onbody_callback;
 	}
-	if(name == properties["onMessageComplete"])
+	if(name == onmessagecomplete_func)
 	{
 		callback = &onmessagecomplete_callback;
 	}
-	if(name == properties["createInfo"]) 
+	if(name == createinfo_prop) 
 	{
 		callback = &create_info;
 	}
@@ -208,11 +227,11 @@ int OnHeadersComplete(http_parser* parser)
 	minor.value.doubleValue = parser->http_major;
 	NPN_SetProperty(npp,info.value.objectValue,NPN_GetStringIdentifier("versionMinor"),&minor);
 
-	NPVariant method;
-	//method.type = NPVariantType_String;
-	//NPString method_str = {(NPUTF8 *)parser->method,strlen((char*)parser->method)};
-	//method.value.stringValue = method;
-	//NPN_SetProperty(npp,info.value.objectValue,NPN_GetStringIdentifier("method"),&method);
+	/*NPVariant method;
+	method.type = NPVariantType_String;
+	NPString method_str = {(NPUTF8 *)parser->method,strlen((char*)parser->method)};
+	method.value.stringValue = method;
+	NPN_SetProperty(npp,info.value.objectValue,NPN_GetStringIdentifier("method"),&method);*/
 
 	NPVariant status;
 	status.type = NPVariantType_Double;

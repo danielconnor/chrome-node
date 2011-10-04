@@ -22,34 +22,24 @@ void TCPWrap::init()
 }
 void TCPWrap::init(uv_tcp_t* stream)
 {
-	addMethod("bind");
 	bind_func = NPN_GetStringIdentifier("bind");
 
-	addMethod("listen");
 	listen_func = NPN_GetStringIdentifier("listen");
 
-	addMethod("readStart");
 	readstart_func = NPN_GetStringIdentifier("readStart");
 
-	addMethod("readStop");
 	readstop_func = NPN_GetStringIdentifier("readStop");
 
-	addMethod("write");
 	write_func = NPN_GetStringIdentifier("write");
 
-	addMethod("close");
 	close_func = NPN_GetStringIdentifier("close");
 
-	addMethod("connect");
 	connect_func = NPN_GetStringIdentifier("connect");
 
-	addCallback("onconnection");
 	onconnection_cb = NPN_GetStringIdentifier("onconnection");
 
-	addCallback("onread");
 	onread_cb = NPN_GetStringIdentifier("onread");
 
-	addProperty("socket");
 	socket_prop = NPN_GetStringIdentifier("socket");
 
 	uv_tcp_init(stream);
@@ -74,6 +64,12 @@ bool TCPWrap::HasMethod(NPIdentifier name)
 			name == readstop_func ||
 			name == bind_func ||
 			name == listen_func;
+}
+bool TCPWrap::HasProperty(NPIdentifier name)
+{
+	return name == onconnection_cb ||
+			name == onread_cb ||
+			name == socket_prop;
 }
 bool TCPWrap::GetProperty(NPIdentifier name, NPVariant *result)
 {
@@ -173,7 +169,7 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 	}
 
 	
-	for(int q = 0; q < argCount; q++) 
+	for(uint32_t q = 0; q < argCount; q++) 
 	{
 		params->args[q] = *CopyNPVariant(&args[q]);
 	}
@@ -202,7 +198,7 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 			NPN_GetProperty(m_Instance,parent.value.objectValue,NPN_GetStringIdentifier("_handle"),&handle);
 
 			params->args[0].type = NPVariantType_String;
-			params->args[0].value.stringValue.UTF8Length = length.value.doubleValue;
+			params->args[0].value.stringValue.UTF8Length = static_cast<uint32_t>(length.value.doubleValue);
 			params->args[0].value.stringValue.UTF8Characters = 
 				((BufferWrap*)handle.value.objectValue)->data + (uint16_t)offset.value.doubleValue;
 		}
@@ -263,7 +259,7 @@ void TCPWrap::invoke_worker_thread(uv_async_t* handle)
 
 bool TCPWrap::bind(NPVariant address, NPVariant port) 
 {
-	int c_port = port.value.doubleValue;
+	int c_port = static_cast<int>(port.value.doubleValue);
 	char* c_address = (char*)realloc((void*)address.value.stringValue.UTF8Characters,address.value.stringValue.UTF8Length);
 
 	// the address must be null terminated
@@ -283,7 +279,7 @@ DWORD WINAPI run_uv(LPVOID lpParam)
 
 bool TCPWrap::listen(NPVariant backlog)
 {
-	int c_backlog = backlog.value.doubleValue;
+	int c_backlog = static_cast<int> (backlog.value.doubleValue);
 
     int r = uv_listen((uv_stream_t*)this->stream, c_backlog, OnConnection);
 

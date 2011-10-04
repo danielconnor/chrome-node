@@ -41,30 +41,30 @@
     <script src="websockets/ctio-faster.js"></script>
     <script>
 
-        var WebSocketServer = require('websocket').server;
-        var http = require("http");
+        // var WebSocketServer = require('websocket').server;
+        // var http = require("http");
 
-        var server = http.createServer(function (request, response) {
-            console.log((new Date()) + " Received request for " + request.url);
-            response.writeHead(404);
-            response.end();
-        });
-        server.listen(8080, function () {
-            console.log("Server is listening on port 8080");
-        });
-        wsServer = new WebSocketServer({
-            httpServer: server,
-            autoAcceptConnections: true
-        });
-        wsServer.on('connect', function (connection) {
-            connection.on("message", function (message) {
-                //console.log(message);
-                connection.sendUTF("hello");
-            });
-        });
+        // var server = http.createServer(function (request, response) {
+        //     console.log((new Date()) + " Received request for " + request.url);
+        //     response.writeHead(404);
+        //     response.end();
+        // });
+        // server.listen(8080, function () {
+        //     console.log("Server is listening on port 8080");
+        // });
+        // wsServer = new WebSocketServer({
+        //     httpServer: server,
+        //     autoAcceptConnections: true
+        // });
+        // wsServer.on('connect', function (connection) {
+        //     connection.on("message", function (message) {
+        //         //console.log(message);
+        //         connection.sendUTF("hello");
+        //     });
+        // });
         
     
-/*       var WebSocketServer = require('websocket').server;
+       var WebSocketServer = require('websocket').server;
        var http = require('http');
 
 
@@ -238,7 +238,7 @@
        Handheld.prototype.sendMessage = function (message) {
            message.id = this.id;
            this.connection.sendUTF(JSON.stringify(message));
-       };*/
+       };
        </script>
 </body>
 </html>

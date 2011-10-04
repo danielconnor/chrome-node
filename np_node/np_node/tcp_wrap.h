@@ -25,6 +25,7 @@ public:
 	TCPWrap(NPP instance);
 	~TCPWrap();
 
+	// holds the uv socket struct
 	uv_tcp_t* stream;
 
 	bool bind(NPVariant address,NPVariant port);
@@ -37,6 +38,7 @@ public:
 
 	bool HasMethod(NPIdentifier name);
 	bool Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount, NPVariant *result);
+    bool HasProperty(NPIdentifier name);
     bool GetProperty(NPIdentifier name, NPVariant *result);
     bool SetProperty(NPIdentifier name, const NPVariant *value);
 	

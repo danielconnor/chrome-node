@@ -1,11 +1,8 @@
 #pragma once
 
-#include <npapi.h>
+#include "npapi.h"
 #include "npruntime.h"
-#include <string>
-#include <hash_map>
 
-typedef stdext::hash_map <const char*, NPIdentifier> IdentifierMap;
 
 #define CREATE_CLASS(_class)		\
 NPClass _class::_npclass = {       \
@@ -73,11 +70,6 @@ public:
     virtual bool Enumerate(NPIdentifier **identifier, uint32_t *count);
     virtual bool Construct(const NPVariant *args, uint32_t argCount, NPVariant *result);
 
-
-	void addMethod(char * name);
-	void addProperty(char * name);
-	void addCallback(char * name);
-
 public:
 	ScriptableObject (NPP instance);
 	void Detatch (void);
@@ -99,7 +91,4 @@ public:
 	void apply(NPObject* function,const NPVariant* args, int arg_len, NPVariant* result);
 
     NPP m_Instance;
-
-	stdext::hash_map <const char*, NPIdentifier> methods;
-	stdext::hash_map <const char*, NPIdentifier> properties;
 };

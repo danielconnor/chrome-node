@@ -52,8 +52,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Node\joyent-node-790f13d\deps\uv\include&quot;;&quot;D:\Libraries\xulrunner-sdk\include&quot;;&quot;C:\Node\joyent-node-790f13d\deps\http_parser&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;NPRUNTIME_EXPORTS;XP_WIN32;MOZILLA_STRICT_API;XPCOM_GLUE;XP_WIN;_X86_;NPSIMPLE_EXPORTS"
+				AdditionalIncludeDirectories="&quot;..\deps\uv\include&quot;;&quot;..\deps\http_parser&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;NPRUNTIME_EXPORTS;XP_WIN32;MOZILLA_STRICT_API;XPCOM_GLUE;XP_WIN;_X86_;NPSIMPLE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
@@ -79,7 +79,7 @@
 				IgnoreImportLibrary="false"
 				AdditionalDependencies="http_parser.lib uv.lib ws2_32.lib wldap32.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;C:\Node\joyent-node-790f13d\deps\http_parser\Debug&quot;;&quot;C:\Node\joyent-node-790f13d\deps\uv\Debug\&quot;"
+				AdditionalLibraryDirectories="&quot;..\deps\http_parser\Debug&quot;;&quot;..\deps\uv\Debug\&quot;"
 				ModuleDefinitionFile=".\np_node.def"
 				GenerateDebugInformation="true"
 				MapExports="true"
@@ -110,7 +110,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(ConfigurationName)"
+			OutputDirectory="..\..\dll"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfATL="2"
@@ -145,11 +145,15 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				AdditionalIncludeDirectories="&quot;..\deps\uv\include&quot;;&quot;..\deps\http_parser&quot;"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_USRDLL;NPRUNTIME_EXPORTS;XP_WIN32;MOZILLA_STRICT_API;XPCOM_GLUE;XP_WIN;_X86_;NPSIMPLE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
+				MinimalRebuild="false"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				DebugInformationFormat="3"
+				DebugInformationFormat="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -165,11 +169,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				RegisterOutput="true"
-				IgnoreImportLibrary="true"
+				RegisterOutput="false"
+				IgnoreImportLibrary="false"
+				AdditionalDependencies="http_parser.lib uv.lib ws2_32.lib wldap32.lib"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;..\deps\http_parser\Release&quot;;&quot;..\deps\uv\Release\&quot;"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile=".\np_node.def"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -233,6 +241,17 @@
 			<File
 				RelativePath=".\plugin.cpp"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="3"
+						InlineFunctionExpansion="2"
+						FavorSizeOrSpeed="1"
+						WholeProgramOptimization="true"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\ScriptableObject.cpp"
@@ -261,7 +280,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\npapi.h"
+				>
+			</File>
+			<File
+				RelativePath=".\npfunctions.h"
+				>
+			</File>
+			<File
 				RelativePath=".\npplat.h"
+				>
+			</File>
+			<File
+				RelativePath=".\npruntime.h"
+				>
+			</File>
+			<File
+				RelativePath=".\nptypes.h"
 				>
 			</File>
 			<File
@@ -312,10 +347,6 @@
 			SourceControlFiles="false"
 			>
 		</Filter>
-		<File
-			RelativePath=".\ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
