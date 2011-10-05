@@ -1,5 +1,4 @@
-libs.websocket = function () {
-    return {
+return {
         "server": require('WebSocketServer'),
         "client": require('WebSocketClient'),
         "router": require('WebSocketRouter'),
@@ -7,4 +6,3 @@ libs.websocket = function () {
         "request": require('WebSocketRequest'),
         "version": "0.0.13"
     };
-};

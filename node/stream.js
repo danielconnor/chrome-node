@@ -18,149 +18,145 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
-libs.stream = function () {
-    var exports = {};
-    var events = require('events');
-    var util = require('util');
+var events = require('events');
+var util = require('util');
 
-    function Stream() {
-        events.EventEmitter.call(this);
+function Stream() {
+    events.EventEmitter.call(this);
+}
+util.inherits(Stream, events.EventEmitter);
+exports.Stream = Stream;
+
+Stream.prototype.pipe = function (dest, options) {
+    var source = this;
+
+    function ondata(chunk) {
+        if (dest.writable) {
+            if (false === dest.write(chunk)) source.pause();
+        }
     }
-    util.inherits(Stream, events.EventEmitter);
-    exports.Stream = Stream;
 
-    Stream.prototype.pipe = function (dest, options) {
-        var source = this;
+    source.on('data', ondata);
 
-        function ondata(chunk) {
-            if (dest.writable) {
-                if (false === dest.write(chunk)) source.pause();
-            }
+    function ondrain() {
+        if (source.readable) source.resume();
+    }
+
+    dest.on('drain', ondrain);
+
+    // If the 'end' option is not supplied, dest.end() will be called when
+    // source gets the 'end' or 'close' events.  Only dest.end() once, and
+    // only when all sources have ended.
+    if (!options || options.end !== false) {
+        dest._pipeCount = dest._pipeCount || 0;
+        dest._pipeCount++;
+
+        source.on('end', onend);
+        source.on('close', onclose);
+    }
+
+    var didOnEnd = false;
+    function onend() {
+        if (didOnEnd) return;
+        didOnEnd = true;
+
+        dest._pipeCount--;
+
+        // remove the listeners
+        cleanup();
+
+        if (dest._pipeCount > 0) {
+            // waiting for other incoming streams to end.
+            return;
         }
 
-        source.on('data', ondata);
+        dest.end();
+    }
 
-        function ondrain() {
-            if (source.readable) source.resume();
+
+    function onclose() {
+        if (didOnEnd) return;
+        didOnEnd = true;
+
+        dest._pipeCount--;
+
+        // remove the listeners
+        cleanup();
+
+        if (dest._pipeCount > 0) {
+            // waiting for other incoming streams to end.
+            return;
         }
 
-        dest.on('drain', ondrain);
+        dest.destroy();
+    }
 
-        // If the 'end' option is not supplied, dest.end() will be called when
-        // source gets the 'end' or 'close' events.  Only dest.end() once, and
-        // only when all sources have ended.
-        if (!options || options.end !== false) {
-            dest._pipeCount = dest._pipeCount || 0;
-            dest._pipeCount++;
-
-            source.on('end', onend);
-            source.on('close', onclose);
+    // don't leave dangling pipes when there are errors.
+    function onerror(er) {
+        cleanup();
+        if (this.listeners('error').length === 0) {
+            throw er; // Unhandled stream error in pipe.
         }
+    }
 
-        var didOnEnd = false;
-        function onend() {
-            if (didOnEnd) return;
-            didOnEnd = true;
+    source.on('error', onerror);
+    dest.on('error', onerror);
 
-            dest._pipeCount--;
+    // guarantee that source streams can be paused and resumed, even
+    // if the only effect is to proxy the event back up the pipe chain.
+    if (!source.pause) {
+        source.pause = function () {
+            source.emit('pause');
+        };
+    }
 
-            // remove the listeners
-            cleanup();
+    if (!source.resume) {
+        source.resume = function () {
+            source.emit('resume');
+        };
+    }
 
-            if (dest._pipeCount > 0) {
-                // waiting for other incoming streams to end.
-                return;
-            }
+    function onpause() {
+        source.pause();
+    }
 
-            dest.end();
-        }
+    dest.on('pause', onpause);
 
+    function onresume() {
+        if (source.readable) source.resume();
+    }
 
-        function onclose() {
-            if (didOnEnd) return;
-            didOnEnd = true;
+    dest.on('resume', onresume);
 
-            dest._pipeCount--;
+    // remove all the event listeners that were added.
+    function cleanup() {
+        source.removeListener('data', ondata);
+        dest.removeListener('drain', ondrain);
 
-            // remove the listeners
-            cleanup();
+        source.removeListener('end', onend);
+        source.removeListener('close', onclose);
 
-            if (dest._pipeCount > 0) {
-                // waiting for other incoming streams to end.
-                return;
-            }
+        dest.removeListener('pause', onpause);
+        dest.removeListener('resume', onresume);
 
-            dest.destroy();
-        }
+        source.removeListener('error', onerror);
+        dest.removeListener('error', onerror);
 
-        // don't leave dangling pipes when there are errors.
-        function onerror(er) {
-            cleanup();
-            if (this.listeners('error').length === 0) {
-                throw er; // Unhandled stream error in pipe.
-            }
-        }
+        source.removeListener('end', cleanup);
+        source.removeListener('close', cleanup);
 
-        source.on('error', onerror);
-        dest.on('error', onerror);
+        dest.removeListener('end', cleanup);
+        dest.removeListener('close', cleanup);
+    }
 
-        // guarantee that source streams can be paused and resumed, even
-        // if the only effect is to proxy the event back up the pipe chain.
-        if (!source.pause) {
-            source.pause = function () {
-                source.emit('pause');
-            };
-        }
+    source.on('end', cleanup);
+    source.on('close', cleanup);
 
-        if (!source.resume) {
-            source.resume = function () {
-                source.emit('resume');
-            };
-        }
+    dest.on('end', cleanup);
+    dest.on('close', cleanup);
 
-        function onpause() {
-            source.pause();
-        }
+    dest.emit('pipe', source);
 
-        dest.on('pause', onpause);
-
-        function onresume() {
-            if (source.readable) source.resume();
-        }
-
-        dest.on('resume', onresume);
-
-        // remove all the event listeners that were added.
-        function cleanup() {
-            source.removeListener('data', ondata);
-            dest.removeListener('drain', ondrain);
-
-            source.removeListener('end', onend);
-            source.removeListener('close', onclose);
-
-            dest.removeListener('pause', onpause);
-            dest.removeListener('resume', onresume);
-
-            source.removeListener('error', onerror);
-            dest.removeListener('error', onerror);
-
-            source.removeListener('end', cleanup);
-            source.removeListener('close', cleanup);
-
-            dest.removeListener('end', cleanup);
-            dest.removeListener('close', cleanup);
-        }
-
-        source.on('end', cleanup);
-        source.on('close', cleanup);
-
-        dest.on('end', cleanup);
-        dest.on('close', cleanup);
-
-        dest.emit('pipe', source);
-
-        // Allow for unix-like usage: A.pipe(B).pipe(C)
-        return dest;
-    };
-    return exports;
+    // Allow for unix-like usage: A.pipe(B).pipe(C)
+    return dest;
 };

@@ -23,7 +23,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-libs.assert = function () {
     var exports = {};
     // UTILITY
     var util = require('util');
@@ -326,5 +325,3 @@ libs.assert = function () {
     };
 
     assert.ifError = function (err) { if (err) { throw err; } };
-    return exports;
-};

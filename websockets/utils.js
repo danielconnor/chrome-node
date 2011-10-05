@@ -1,10 +1,7 @@
-libs.utils = function () {
-    var exports = {
+return {
         extend: function extend(dest, source) {
             for (var prop in source) {
                 dest[prop] = source[prop];
             }
         }
     };
-    return exports;
-};

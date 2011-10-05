@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ***********************************************************************/
-libs.WebSocketClient = function() {
 var extend = require('utils').extend;
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
@@ -249,4 +248,3 @@ WebSocketClient.prototype.succeedHandshake = function() {
 };
 
 return WebSocketClient;
-}

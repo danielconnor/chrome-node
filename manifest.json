@@ -1,7 +1,7 @@
 {
-	"name": "SocketServer",
-	"version": "0.1",
-	"description": "A socket server that runs in your browser",
+	"name": "chrome-node",
+	"version": "0.2",
+	"description": "Node running in your browser",
 	"background_page": "background.html",
 	"browser_action": {
 		"default_icon": "graphics/c-node_small.png",
@@ -11,12 +11,6 @@
 		{ "path": "dll/np_node.dll"}
 	],
 	"permissions": [
-		"http://*/*", 
-		"https://*/*",
-		"notifications",
-		"experimental",
-		"contextMenus",
-		"tabs",
-		"cookies"
+		"<all_urls>"
 	]
 }

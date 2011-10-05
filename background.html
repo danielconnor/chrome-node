@@ -3,67 +3,69 @@
 </head>
 <body>
     <embed type="application/x-node" id="plugin" />
-
-    <script type="text/javascript">
+    <script type="text/javascript">      
         window.NODE = document.getElementById("plugin");
-        var libs = {};
-        function require(libName) {
-            return libs[libName]();
-        };
-    </script>
 
-    <script src="node/util.js"></script>
-    <script src="node/stream.js"></script>
-    <script src="node/events.js"></script>
-    <script src="node/assert.js"></script>
-    <script src="node/net.js"></script>
-    <script src="node/freelist.js"></script>
-    <script src="node/crypto.js"></script>
-    <script src="node/http2.js"></script>
-    <script src="node/url.js"></script>
-    <script src="node/buffer.js"></script>
-    <script src="node/punycode.js"></script>
-    <script src="node/querystring.js"></script>
+        window.require = (function() {
+          const START_LOAD = "(function() { var exports = { };",
+              END_LOAD = "; return exports;})()";
 
-    <script src="crypto/crypto-sha1-hmac.js"></script>
+          function getBundledPath(file) {
+            return chrome.extension.getURL(file);
+          }
 
-    <script src="websockets/utils.js"></script>
-    <script src="websockets/websocket.js"></script>
-    <script src="websockets/WebSocketClient.js"></script>
-    <script src="websockets/WebSocketConnection.js"></script>
-    <script src="websockets/WebSocketFrame.js"></script>
-    <script src="websockets/WebSocketRequest.js"></script>
-    <script src="websockets/WebSocketRouter.js"></script>
-    <script src="websockets/WebSocketRouterRequest.js"></script>
-    <script src="websockets/WebSocketServer.js"></script>
+          var bundled = {
+            "util": getBundledPath("node/util.js"),
+            "http": getBundledPath("node/http2.js"),
+            "assert": getBundledPath("node/assert.js"),
+            "punycode": getBundledPath("node/punycode.js"),
+            "buffer": getBundledPath("node/buffer.js"),
+            "url": getBundledPath("node/url.js"),
+            "freelist": getBundledPath("node/freelist.js"),
+            "events": getBundledPath("node/events.js"),
+            "crypto": getBundledPath("node/crypto.js"),
+            "querystring": getBundledPath("node/querystring.js"),
+            "stream": getBundledPath("node/stream.js"),
+            "net": getBundledPath("node/net.js"),
 
-    <script src="websockets/FastBufferList.js"></script>
-    <script src="websockets/ctio-faster.js"></script>
-    <script>
+            "ctio-faster": getBundledPath("websockets/ctio-faster.js"),
+            "FastBufferList": getBundledPath("websockets/FastBufferList.js"),
+            "utils": getBundledPath("websockets/utils.js"),
+            "websocket": getBundledPath("websockets/websocket.js"),
+            "WebSocketClient": getBundledPath("websockets/WebSocketClient.js"),
+            "WebSocketConnection": getBundledPath("websockets/WebSocketConnection.js"),
+            "WebSocketFrame": getBundledPath("websockets/WebSocketFrame.js"),
+            "WebSocketRequest": getBundledPath("websockets/WebSocketRequest.js"),
+            "WebSocketRouter": getBundledPath("websockets/WebSocketRouter.js"),
+            "WebSocketRouterRequest": getBundledPath("websockets/WebSocketRouterRequest.js"),
+            "WebSocketServer": getBundledPath("websockets/WebSocketServer.js")
+          };
+          var loaded = {};
 
-        // var WebSocketServer = require('websocket').server;
-        // var http = require("http");
+          var stack = [];
 
-        // var server = http.createServer(function (request, response) {
-        //     console.log((new Date()) + " Received request for " + request.url);
-        //     response.writeHead(404);
-        //     response.end();
-        // });
-        // server.listen(8080, function () {
-        //     console.log("Server is listening on port 8080");
-        // });
-        // wsServer = new WebSocketServer({
-        //     httpServer: server,
-        //     autoAcceptConnections: true
-        // });
-        // wsServer.on('connect', function (connection) {
-        //     connection.on("message", function (message) {
-        //         //console.log(message);
-        //         connection.sendUTF("hello");
-        //     });
-        // });
+          function require(libName) {
+            var contents;
+            if(loaded[libName]) {
+              contents = loaded[libName];
+            }
+            else if(bundled[libName]) {
+              var xhr = new XMLHttpRequest();
+              xhr.open('GET', bundled[libName], false);
+              xhr.send(null);
+              contents = loaded[libName] = xhr.responseText;
+            }
+            if(contents) {
+              return eval(START_LOAD + contents + END_LOAD);
+            }
+
+          };
+
+          return require;
+        })();
         
-    
+
+
        var WebSocketServer = require('websocket').server;
        var http = require('http');
 
@@ -239,6 +241,9 @@
            message.id = this.id;
            this.connection.sendUTF(JSON.stringify(message));
        };
-       </script>
+
+
+    </script>
+
 </body>
 </html>
