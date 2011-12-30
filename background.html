@@ -7,8 +7,8 @@
         window.NODE = document.getElementById("plugin");
 
         window.require = (function() {
-          const START_LOAD = "(function() { var exports = { };",
-              END_LOAD = "; return exports;})()";
+          const START_LOAD = "(function() { var module = { exports: {} }, exports = module.exports;",
+              END_LOAD = "; return module.exports;})()";
 
           function getBundledPath(file) {
             return chrome.extension.getURL(file);
@@ -29,6 +29,8 @@
             "net": getBundledPath("node/net.js"),
 
             "ctio-faster": getBundledPath("websockets/ctio-faster.js"),
+            "Constants": getBundledPath("websockets/Constants.js"),
+            "Validation": getBundledPath("websockets/Validation.js"),
             "FastBufferList": getBundledPath("websockets/FastBufferList.js"),
             "utils": getBundledPath("websockets/utils.js"),
             "websocket": getBundledPath("websockets/websocket.js"),
@@ -64,7 +66,6 @@
           return require;
         })();
         
-
 
        var WebSocketServer = require('websocket').server;
        var http = require('http');
@@ -211,6 +212,7 @@
                    //console.log(message);
                    var data = JSON.parse(message.utf8Data)
                    handheld.orientation = data.orientation;
+                   //console.log(JSON.stringify(data.orientation));
                    if (handheld.computer) {
                        handheld.update();
                    }

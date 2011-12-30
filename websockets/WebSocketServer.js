@@ -1,28 +1,29 @@
 /************************************************************************
-*  Copyright 2010-2011 Worlize Inc.
-*  
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*  
-*      http://www.apache.org/licenses/LICENSE-2.0
-*  
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-***********************************************************************/
+ *  Copyright 2010-2011 Worlize Inc.
+ *  
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *  
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *  
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ***********************************************************************/
+
 var extend = require('utils').extend;
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var WebSocketRequest = require('WebSocketRequest');
+var Constants = require('Constants');
 
 var WebSocketServer = function WebSocketServer(config) {
     this._handlers = {
         upgrade: this.handleUpgrade.bind(this),
-        requestAccepted: this.handleRequestAccepted.bind(this),
-        connectionClose: this.handleConnectionClose.bind(this)
+        requestAccepted: this.handleRequestAccepted.bind(this)
     };
     this.connections = [];
     if (config) {
@@ -32,33 +33,46 @@ var WebSocketServer = function WebSocketServer(config) {
 
 util.inherits(WebSocketServer, EventEmitter);
 
-WebSocketServer.prototype.mount = function (config) {
+WebSocketServer.prototype.mount = function(config) {
     this.config = {
         // The http server instance to attach to.  Required.
         httpServer: null,
-
+        
         // 64KiB max frame size.
         maxReceivedFrameSize: 0x10000,
 
         // 1MiB max message size, only applicable if
         // assembleFragments is true
         maxReceivedMessageSize: 0x100000,
-
+        
         // Outgoing messages larger than fragmentationThreshold will be
         // split into multiple fragments.
         fragmentOutgoingMessages: true,
-
+        
         // Outgoing frames are fragmented if they exceed this threshold.
         // Default is 16KiB
         fragmentationThreshold: 0x4000,
-
+        
         // If true, the server will automatically send a ping to all
-        // clients every 'keepaliveInterval' milliseconds.
+        // clients every 'keepaliveInterval' milliseconds.  The timer is
+        // reset on any received data from the client.
         keepalive: true,
-
-        // The interval to send keepalive pings to connected clients.
+        
+        // The interval to send keepalive pings to connected clients if the
+        // connection is idle.  Any received data will reset the counter.
         keepaliveInterval: 20000,
-
+        
+        // If true, the server will consider any connection that has not
+        // received any data within the amount of time specified by
+        // 'keepaliveGracePeriod' after a keepalive ping has been sent.
+        // Ignored if keepalive is false.
+        dropConnectionOnKeepaliveTimeout: true,
+        
+        // The amount of time to wait after sending a keepalive ping before
+        // closing the connection if the connected peer does not respond.
+        // Ignored if keepalive is false.
+        keepaliveGracePeriod: 10000,
+        
         // If true, fragmented messages will be automatically assembled
         // and the full message will be emitted via a 'message' event.
         // If false, each frame will be emitted via a 'frame' event and
@@ -67,7 +81,7 @@ WebSocketServer.prototype.mount = function (config) {
         // event in addition to the 'frame' event.
         // Most users will want to leave this set to 'true'
         assembleFragments: true,
-
+        
         // If this is true, websocket connections will be accepted
         // regardless of the path and protocol specified by the client.
         // The protocol accepted will be the first that was requested
@@ -76,7 +90,7 @@ WebSocketServer.prototype.mount = function (config) {
         // probably leave this set to 'false' and inspect the request
         // object to make sure it's acceptable before accepting it.
         autoAcceptConnections: false,
-
+        
         // The Nagle Algorithm makes more efficient use of network resources
         // by introducing a small delay before sending small packets so that
         // multiple messages can be batched together before going onto the
@@ -84,14 +98,14 @@ WebSocketServer.prototype.mount = function (config) {
         // is to disable it.  If you don't need low latency and are streaming
         // lots of small messages, you can change this to 'false'
         disableNagleAlgorithm: true,
-
+        
         // The number of milliseconds to wait after sending a close frame
         // for an acknowledgement to come back before giving up and just
         // closing the socket.
         closeTimeout: 5000
     };
     extend(this.config, config);
-
+    
     // this.httpServer = httpServer;
     // if (typeof(pathRegExp) === 'string') {
     //     pathRegExp = new RegExp('^' + pathRegExp + '$');
@@ -106,32 +120,61 @@ WebSocketServer.prototype.mount = function (config) {
     }
 };
 
-WebSocketServer.prototype.unmount = function () {
+WebSocketServer.prototype.unmount = function() {
     this.config.httpServer.removeListener('upgrade', this._handlers.upgrade);
 };
 
-WebSocketServer.prototype.closeAllConnections = function () {
-    this.connections.forEach(function (connection) {
+WebSocketServer.prototype.closeAllConnections = function() {
+    this.connections.forEach(function(connection) {
         connection.close();
     });
 };
 
-WebSocketServer.prototype.shutDown = function () {
+WebSocketServer.prototype.broadcast = function(data) {
+    if (Buffer.isBuffer(data)) {
+        this.broadcastBytes(data);
+    }
+    else if (typeof(data.toString) === 'function') {
+        this.broadcastUTF(data);
+    }
+};
+
+WebSocketServer.prototype.broadcastUTF = function(utfData) {
+    this.connections.forEach(function(connection) {
+        connection.sendUTF(utfData);
+    });
+};
+
+WebSocketServer.prototype.broadcastBytes = function(binaryData) {
+    this.connections.forEach(function(connection) {
+        connection.sendBytes(binaryData);
+    });
+};
+
+WebSocketServer.prototype.shutDown = function() {
     this.unmount();
     this.closeAllConnections();
 };
 
-WebSocketServer.prototype.handleUpgrade = function (request, socket, head) {
+WebSocketServer.prototype.handleUpgrade = function(request, socket, head) {
+    var wsRequest = new WebSocketRequest(socket, request, this.config);
     try {
-        var wsRequest = new WebSocketRequest(socket, request, this.config);
+        wsRequest.readHandshake();
     }
-    catch (e) {
-        console.error((new Date()) + " WebSocket: Invalid handshake: " + e.toString());
+    catch(e) {
+        wsRequest.reject(
+            e.httpCode ? e.httpCode : 400,
+            e.message,
+            e.headers
+        );
+        if (Constants.DEBUG) {
+            console.error((new Date()) + " WebSocket: Invalid handshake: " + e.message);
+        }
         return;
     }
 
     wsRequest.once('requestAccepted', this._handlers.requestAccepted);
-
+    
     if (!this.config.autoAcceptConnections && this.listeners('request').length > 0) {
         this.emit('request', wsRequest);
     }
@@ -143,17 +186,21 @@ WebSocketServer.prototype.handleUpgrade = function (request, socket, head) {
     }
 };
 
-WebSocketServer.prototype.handleRequestAccepted = function (connection) {
-    connection.once('close', this._handlers.connectionClose);
+WebSocketServer.prototype.handleRequestAccepted = function(connection) {
+    var self = this;
+    connection.once('close', function(closeReason, description) {
+        self.handleConnectionClose(connection, closeReason, description);
+    });
     this.connections.push(connection);
     this.emit('connect', connection);
 };
-WebSocketServer.prototype.handleConnectionClose = function (connection) {
+
+WebSocketServer.prototype.handleConnectionClose = function(connection, closeReason, description) {
     var index = this.connections.indexOf(connection);
     if (index !== -1) {
         this.connections.splice(index, 1);
     }
-    this.emit('close', connection);
+    this.emit('close', connection, closeReason, description);
 };
 
-return WebSocketServer;
+module.exports = WebSocketServer;

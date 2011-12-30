@@ -1,8 +1,10 @@
-return {
-        "server": require('WebSocketServer'),
-        "client": require('WebSocketClient'),
-        "router": require('WebSocketRouter'),
-        "frame": require('WebSocketFrame'),
-        "request": require('WebSocketRequest'),
-        "version": "0.0.13"
-    };
+module.exports = {
+    "server"     : require('WebSocketServer'),
+    "client"     : require('WebSocketClient'),
+    "router"     : require('WebSocketRouter'),
+    "frame"      : require('WebSocketFrame'),
+    "request"    : require('WebSocketRequest'),
+    "connection" : require('WebSocketConnection'),
+    "constants"  : require('Constants'),
+    "version"    : "1.0.4"
+};

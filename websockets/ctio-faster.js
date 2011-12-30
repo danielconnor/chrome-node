@@ -36,7 +36,6 @@
 * the case of >>> the values are cast to an unsigned number.
 */
 
-var exports = {};
 /*
 * A reminder on endian related issues:
 *

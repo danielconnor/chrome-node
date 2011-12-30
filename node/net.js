@@ -367,7 +367,6 @@ Socket.prototype.write = function (data /* [encoding], [fd], [cb] */) {
         return false;
     }
 
-
     //changed this to pass callbacks with write function
     //because if data is too short they get called before they are set
     var writeReq = this._handle.write(data, afterWrite, cb);

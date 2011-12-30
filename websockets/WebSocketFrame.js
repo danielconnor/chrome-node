@@ -1,20 +1,22 @@
 /************************************************************************
-*  Copyright 2010-2011 Worlize Inc.
-*  
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*  
-*      http://www.apache.org/licenses/LICENSE-2.0
-*  
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-***********************************************************************/
+ *  Copyright 2010-2011 Worlize Inc.
+ *  
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *  
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *  
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ***********************************************************************/
+
 var ctio = require('ctio-faster');
-var Buffer = require("buffer").Buffer;
+var Buffer = require('buffer').Buffer;
+
 const DECODE_HEADER = 1;
 const WAITING_FOR_16_BIT_LENGTH = 2;
 const WAITING_FOR_64_BIT_LENGTH = 3;
@@ -33,9 +35,10 @@ function WebSocketFrame(maskBytes, frameHeader, config) {
     this.maxReceivedFrameSize = config.maxReceivedFrameSize;
     this.protocolError = false;
     this.frameTooLarge = false;
+    this.invalidCloseFrameLength = false;
     this.parseState = DECODE_HEADER;
     this.closeStatus = -1;
-};
+}
 
 WebSocketFrame.prototype.addData = function(bufferList, fragmentationType) {
     var temp;
@@ -43,6 +46,10 @@ WebSocketFrame.prototype.addData = function(bufferList, fragmentationType) {
         if (bufferList.length >= 2) {
             bufferList.joinInto(this.frameHeader, 0, 0, 2);
             bufferList.advance(2);
+
+            //must use get/set instead
+            //var firstByte = this.frameHeader[0];
+            //var secondByte = this.frameHeader[1];
             var firstByte = this.frameHeader.get(0);
             var secondByte = this.frameHeader.get(1);
 
@@ -54,12 +61,12 @@ WebSocketFrame.prototype.addData = function(bufferList, fragmentationType) {
 
             this.opcode  = this.frameHeader.get(0,"ascii") & 0x0F;
             this.length = this.frameHeader.get(1,"ascii") & 0x7F;
-        
+            
             // Control frame sanity check
             if (this.opcode >= 0x08) {
                 if (this.length > 125) {
                     this.protocolError = true;
-                    this.dropReason = "Illegal control frame longer than 125 bytes."
+                    this.dropReason = "Illegal control frame longer than 125 bytes.";
                     return true;
                 }
                 if (!this.fin) {
@@ -68,7 +75,7 @@ WebSocketFrame.prototype.addData = function(bufferList, fragmentationType) {
                     return true;
                 }
             }
-        
+            
             if (this.length === 126) {
                 this.parseState = WAITING_FOR_16_BIT_LENGTH;
             }
@@ -102,7 +109,7 @@ WebSocketFrame.prototype.addData = function(bufferList, fragmentationType) {
             this.parseState = WAITING_FOR_MASK_KEY;
         }
     }
-
+    
     if (this.parseState === WAITING_FOR_MASK_KEY) {
         if (this.mask) {
             if (bufferList.length >= 4) {
@@ -116,7 +123,7 @@ WebSocketFrame.prototype.addData = function(bufferList, fragmentationType) {
             this.parseState = WAITING_FOR_PAYLOAD;
         }
     }
-
+    
     if (this.parseState === WAITING_FOR_PAYLOAD) {
         if (this.length > this.maxReceivedFrameSize) {
             this.frameTooLarge = true;
@@ -124,7 +131,7 @@ WebSocketFrame.prototype.addData = function(bufferList, fragmentationType) {
                               " bytes exceeds maximum accepted frame size";
             return true;
         }
-    
+        
         if (this.length === 0) {
             this.binaryPayload = new Buffer(0);
             this.parseState = COMPLETE;
@@ -136,12 +143,19 @@ WebSocketFrame.prototype.addData = function(bufferList, fragmentationType) {
             if (this.mask) {
                 this.applyMask(this.binaryPayload, 0, this.length);
             }
-        
+            
             if (this.opcode === 0x08) { // WebSocketOpcode.CONNECTION_CLOSE
-                this.closeStatus = ctio.ruint16(this.binaryPayload, 'big', 0);
-                this.binaryPayload = this.binaryPayload.slice(2);
+                if (this.length === 1) {
+                    // Invalid length for a close frame.  Must be zero or at least two.
+                    this.binaryPayload = new Buffer(0);
+                    this.invalidCloseFrameLength = true;
+                }
+                if (this.length >= 2) {
+                    this.closeStatus = ctio.ruint16(this.binaryPayload, 'big', 0);
+                    this.binaryPayload = this.binaryPayload.slice(2);
+                }
             }
-        
+            
             this.parseState = COMPLETE;
             return true;
         }
@@ -161,7 +175,7 @@ WebSocketFrame.prototype.throwAwayPayload = function(bufferList) {
 WebSocketFrame.prototype.applyMask = function(buffer, offset, length) {
     var end = offset + length;
     for (var i=offset; i < end; i++) {
-        buffer.set(i,buffer.get(i) ^ this.maskBytes.get(this.maskPos));
+        buffer.set(i, buffer.get(i) ^ this.maskBytes.get(this.maskPos));
         this.maskPos = (this.maskPos + 1) & 3;
     }
 };
@@ -173,7 +187,7 @@ WebSocketFrame.prototype.toBuffer = function(nullMask) {
     var outputPos;
     var firstByte = 0x00;
     var secondByte = 0x00;
-
+    
     if (this.fin) {
         firstByte |= 0x80;
     }
@@ -235,7 +249,7 @@ WebSocketFrame.prototype.toBuffer = function(nullMask) {
     output.set(1,secondByte);
 
     outputPos = 2;
-
+    
     if (this.length > 125 && this.length <= 0xFFFF) {
         // write 16-bit length
         ctio.wuint16(this.length, 'big', output, outputPos);
@@ -246,7 +260,7 @@ WebSocketFrame.prototype.toBuffer = function(nullMask) {
         ctio.wuint64([0x00000000, this.length], 'big', output, outputPos);
         outputPos += 8;
     }
-
+    
     if (this.length > 0) {
         if (this.mask) {
             if (!nullMask) {
@@ -262,7 +276,7 @@ WebSocketFrame.prototype.toBuffer = function(nullMask) {
             // write the mask key
             this.maskBytes.copy(output, outputPos);
             outputPos += 4;
-    
+        
             data.copy(output, outputPos);
             this.applyMask(output, outputPos, data.length);
         }
@@ -270,13 +284,13 @@ WebSocketFrame.prototype.toBuffer = function(nullMask) {
             data.copy(output, outputPos);
         }
     }
-
+    
     return output;
 };
-
+    
 WebSocketFrame.prototype.toString = function() {
     return "Opcode: " + this.opcode + ", fin: " + this.fin + ", length: " + this.length + ", hasPayload: " + Boolean(this.binaryPayload) + ", masked: " + this.mask;
 };
 
 
-return WebSocketFrame;
+module.exports = WebSocketFrame;
