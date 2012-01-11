@@ -30,9 +30,6 @@
 #include "internal.h"
 
 
-const uv_err_t uv_ok_ = { UV_OK, ERROR_SUCCESS };
-
-
 /*
  * Display an error message and abort the event loop.
  */
@@ -67,41 +64,26 @@ void uv_fatal_error(const int errorno, const char* syscall) {
 }
 
 
-uv_err_t uv_last_error() {
-  return LOOP->last_error;
-}
-
-
-char* uv_strerror(uv_err_t err) {
-  if (LOOP->err_str != NULL) {
-    LocalFree(LOOP->err_str);
-  }
-
-  FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-      FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err.sys_errno_,
-      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&LOOP->err_str, 0, NULL);
-
-  if (LOOP->err_str) {
-    return LOOP->err_str;
-  } else {
-    return "Unknown error";
-  }
-}
-
-
 uv_err_code uv_translate_sys_error(int sys_errno) {
   switch (sys_errno) {
     case ERROR_SUCCESS:                     return UV_OK;
-    case ERROR_NOACCESS:                    return UV_EACCESS;
-    case WSAEACCES:                         return UV_EACCESS;
+    case ERROR_FILE_NOT_FOUND:              return UV_ENOENT;
+    case ERROR_PATH_NOT_FOUND:              return UV_ENOENT;
+    case ERROR_ACCESS_DENIED:               return UV_EACCES;
+    case ERROR_NOACCESS:                    return UV_EACCES;
+    case WSAEACCES:                         return UV_EACCES;
     case ERROR_ADDRESS_ALREADY_ASSOCIATED:  return UV_EADDRINUSE;
     case WSAEADDRINUSE:                     return UV_EADDRINUSE;
     case WSAEADDRNOTAVAIL:                  return UV_EADDRNOTAVAIL;
     case WSAEAFNOSUPPORT:                   return UV_EAFNOSUPPORT;
     case WSAEWOULDBLOCK:                    return UV_EAGAIN;
     case WSAEALREADY:                       return UV_EALREADY;
+    case ERROR_CONNECTION_ABORTED:          return UV_ECONNABORTED;
+    case WSAECONNABORTED:                   return UV_ECONNABORTED;
     case ERROR_CONNECTION_REFUSED:          return UV_ECONNREFUSED;
     case WSAECONNREFUSED:                   return UV_ECONNREFUSED;
+    case ERROR_NETNAME_DELETED:             return UV_ECONNRESET;
+    case WSAECONNRESET:                     return UV_ECONNRESET;
     case WSAEFAULT:                         return UV_EFAULT;
     case ERROR_HOST_UNREACHABLE:            return UV_EHOSTUNREACH;
     case WSAEHOSTUNREACH:                   return UV_EHOSTUNREACH;
@@ -113,6 +95,8 @@ uv_err_code uv_translate_sys_error(int sys_errno) {
     case ERROR_NETWORK_UNREACHABLE:         return UV_ENETUNREACH;
     case WSAENETUNREACH:                    return UV_ENETUNREACH;
     case ERROR_OUTOFMEMORY:                 return UV_ENOMEM;
+    case ERROR_NOT_CONNECTED:               return UV_ENOTCONN;
+    case WSAENOTCONN:                       return UV_ENOTCONN;
     case ERROR_NOT_SUPPORTED:               return UV_ENOTSUP;
     case ERROR_INSUFFICIENT_BUFFER:         return UV_EINVAL;
     case ERROR_INVALID_FLAGS:               return UV_EBADF;
@@ -121,26 +105,9 @@ uv_err_code uv_translate_sys_error(int sys_errno) {
     case ERROR_BROKEN_PIPE:                 return UV_EOF;
     case ERROR_PIPE_BUSY:                   return UV_EBUSY;
     case ERROR_SEM_TIMEOUT:                 return UV_ETIMEDOUT;
+    case ERROR_ALREADY_EXISTS:              return UV_EEXIST;
+    case WSAHOST_NOT_FOUND:                 return UV_ENOENT;
     default:                                return UV_UNKNOWN;
   }
 }
 
-
-uv_err_t uv_new_sys_error(int sys_errno) {
-  uv_err_t e;
-  e.code = uv_translate_sys_error(sys_errno);
-  e.sys_errno_ = sys_errno;
-  return e;
-}
-
-
-void uv_set_sys_error(int sys_errno) {
-  LOOP->last_error.code = uv_translate_sys_error(sys_errno);
-  LOOP->last_error.sys_errno_ = sys_errno;
-}
-
-
-void uv_set_error(uv_err_code code, int sys_errno) {
-  LOOP->last_error.code = code;
-  LOOP->last_error.sys_errno_ = sys_errno;
-}

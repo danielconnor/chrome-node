@@ -24,7 +24,7 @@ ifdef MSVC
 uname_S := MINGW
 endif
 
-CPPFLAGS += -Iinclude
+CPPFLAGS += -Iinclude -Iinclude/uv-private
 
 CARES_OBJS =
 CARES_OBJS += src/ares/ares__close_sockets.o
@@ -77,10 +77,10 @@ else
 include config-unix.mk
 endif
 
-TESTS=test/echo-server.c test/test-*.c
-BENCHMARKS=test/echo-server.c test/dns-server.c test/benchmark-*.c
+TESTS=test/blackhole-server.c test/echo-server.c test/test-*.c
+BENCHMARKS=test/blackhole-server.c test/echo-server.c test/dns-server.c test/benchmark-*.c
 
-all: uv.a test/run-tests test/run-benchmarks
+all: uv.a
 
 $(CARES_OBJS): %.o: %.c
 	$(CC) -o $*.o -c $(CFLAGS) $(CPPFLAGS) $< -DHAVE_CONFIG_H

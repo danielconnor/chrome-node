@@ -9,7 +9,7 @@ uv_async_t TCPWrap::async_handle;
 
 DWORD WINAPI TCPWrap::run_uv(LPVOID lpParam) 
 {
-	uv_run();
+	uv_run(uv_default_loop());
 	return 0;
 }
 
@@ -42,7 +42,7 @@ void TCPWrap::init(uv_tcp_t* stream)
 
 	socket_prop = NPN_GetStringIdentifier("socket");
 
-	uv_tcp_init(stream);
+	uv_tcp_init(uv_default_loop(), stream);
 
 	onconnection_callback = new NPObject();
 	onread_callback = new NPObject();
@@ -185,7 +185,10 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 			// we dont want to delete the buffer because it's a SlowBuffer and might be accessed later
 			// via a Buffer
 			w->retainBuffer = true;
-			NPVariant offset,length,parent,handle;
+			NPVariant offset,
+					  length,
+					  parent,
+					  handle;
 
 			// buffer.offset
 			NPN_GetProperty(m_Instance,params->args[0].value.objectValue,NPN_GetStringIdentifier("offset"),&offset);
@@ -271,11 +274,6 @@ bool TCPWrap::bind(NPVariant address, NPVariant port)
 	return true;
 }
 
-DWORD WINAPI run_uv(LPVOID lpParam) 
-{
-	uv_run();
-	return 0;
-}
 
 bool TCPWrap::listen(NPVariant backlog)
 {
@@ -383,7 +381,7 @@ void OnWrite(uv_write_t* write_req, int status)
 
 	req->fireCallback("oncomplete",args,3);
 	if(!req->retainBuffer) {
-		//delete[] req->data;
+		delete[] req->data;
 	}
 }
 void OnClose(uv_stream_t* stream)

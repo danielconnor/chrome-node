@@ -22,5 +22,4 @@ Thumbs.db
 *.map
 *.pdb
 Release
-Debug
-websockets-old
+*-old

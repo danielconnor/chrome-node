@@ -100,8 +100,7 @@ CPlugin::CPlugin(NPP pNPInstance) :
 	NPN_GetValue(m_pNPInstance, NPNVWindowNPObject, &sWindowObj);
 
 	// initialise uv and set up inter-thread communication
-	uv_init();
-	uv_async_init(&TCPWrap::async_handle, (uv_async_cb)TCPWrap::invoke_worker_thread);
+	uv_async_init(uv_default_loop(), &TCPWrap::async_handle, (uv_async_cb)TCPWrap::invoke_worker_thread);
 	CreateThread(NULL,0,TCPWrap::run_uv,NULL,0,NULL);
 }
 

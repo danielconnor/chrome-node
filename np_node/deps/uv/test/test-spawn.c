@@ -23,15 +23,17 @@
 #include "task.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static int close_cb_called;
 static int exit_cb_called;
 static uv_process_t process;
 static uv_timer_t timer;
-static uv_process_options_t options = { 0 };
+static uv_process_options_t options;
 static char exepath[1024];
 static size_t exepath_size = 1024;
 static char* args[3];
+static int no_term_signal;
 
 #define OUTPUT_SIZE 1024
 static char output[OUTPUT_SIZE];
@@ -54,6 +56,8 @@ static void exit_cb(uv_process_t* process, int exit_status, int term_signal) {
 
 
 static void kill_cb(uv_process_t* process, int exit_status, int term_signal) {
+  uv_err_t err;
+
   printf("exit_cb\n");
   exit_cb_called++;
 #ifdef _WIN32
@@ -61,12 +65,20 @@ static void kill_cb(uv_process_t* process, int exit_status, int term_signal) {
 #else
   ASSERT(exit_status == 0);
 #endif
-  ASSERT(term_signal == 15);
+  ASSERT(no_term_signal || term_signal == 15);
   uv_close((uv_handle_t*)process, close_cb);
+
+  /*
+   * Sending signum == 0 should check if the
+   * child process is still alive, not kill it.
+   * This process should be dead.
+   */
+  err = uv_kill(process->pid, 0);
+  ASSERT(err.code == UV_ESRCH);
 }
 
 
-uv_buf_t on_alloc(uv_handle_t* handle, size_t suggested_size) {
+static uv_buf_t on_alloc(uv_handle_t* handle, size_t suggested_size) {
   uv_buf_t buf;
   buf.base = output + output_used;
   buf.len = OUTPUT_SIZE - output_used;
@@ -75,7 +87,7 @@ uv_buf_t on_alloc(uv_handle_t* handle, size_t suggested_size) {
 
 
 void on_read(uv_stream_t* tcp, ssize_t nread, uv_buf_t buf) {
-  uv_err_t err = uv_last_error();
+  uv_err_t err = uv_last_error(uv_default_loop());
 
   if (nread > 0) {
     output_used += nread;
@@ -116,14 +128,12 @@ static void timer_cb(uv_timer_t* handle, int status) {
 TEST_IMPL(spawn_exit_code) {
   int r;
 
-  uv_init();
-
   init_process_options("spawn_helper1", exit_cb);
 
-  r = uv_spawn(&process, options);
+  r = uv_spawn(uv_default_loop(), &process, options);
   ASSERT(r == 0);
 
-  r = uv_run();
+  r = uv_run(uv_default_loop());
   ASSERT(r == 0);
 
   ASSERT(exit_cb_called == 1);
@@ -137,20 +147,18 @@ TEST_IMPL(spawn_stdout) {
   int r;
   uv_pipe_t out;
 
-  uv_init();
-
   init_process_options("spawn_helper2", exit_cb);
 
-  uv_pipe_init(&out);
+  uv_pipe_init(uv_default_loop(), &out, 0);
   options.stdout_stream = &out;
 
-  r = uv_spawn(&process, options);
+  r = uv_spawn(uv_default_loop(), &process, options);
   ASSERT(r == 0);
 
   r = uv_read_start((uv_stream_t*) &out, on_alloc, on_read);
   ASSERT(r == 0);
 
-  r = uv_run();
+  r = uv_run(uv_default_loop());
   ASSERT(r == 0);
 
   ASSERT(exit_cb_called == 1);
@@ -163,23 +171,21 @@ TEST_IMPL(spawn_stdout) {
 
 
 TEST_IMPL(spawn_stdin) {
-int r;
+  int r;
   uv_pipe_t out;
   uv_pipe_t in;
   uv_write_t write_req;
   uv_buf_t buf;
   char buffer[] = "hello-from-spawn_stdin";
 
-  uv_init();
-
   init_process_options("spawn_helper3", exit_cb);
 
-  uv_pipe_init(&out);
-  uv_pipe_init(&in);
+  uv_pipe_init(uv_default_loop(), &out, 0);
+  uv_pipe_init(uv_default_loop(), &in, 0);
   options.stdout_stream = &out;
   options.stdin_stream = &in;
 
-  r = uv_spawn(&process, options);
+  r = uv_spawn(uv_default_loop(), &process, options);
   ASSERT(r == 0);
 
   buf.base = buffer;
@@ -190,7 +196,7 @@ int r;
   r = uv_read_start((uv_stream_t*) &out, on_alloc, on_read);
   ASSERT(r == 0);
 
-  r = uv_run();
+  r = uv_run(uv_default_loop());
   ASSERT(r == 0);
 
   ASSERT(exit_cb_called == 1);
@@ -204,24 +210,127 @@ int r;
 TEST_IMPL(spawn_and_kill) {
   int r;
 
-  uv_init();
-
   init_process_options("spawn_helper4", kill_cb);
 
-  r = uv_spawn(&process, options);
+  r = uv_spawn(uv_default_loop(), &process, options);
   ASSERT(r == 0);
 
-  r = uv_timer_init(&timer);
+  r = uv_timer_init(uv_default_loop(), &timer);
   ASSERT(r == 0);
 
   r = uv_timer_start(&timer, timer_cb, 500, 0);
   ASSERT(r == 0);
 
-  r = uv_run();
+  r = uv_run(uv_default_loop());
   ASSERT(r == 0);
 
   ASSERT(exit_cb_called == 1);
   ASSERT(close_cb_called == 2); /* Once for process and once for timer. */
+
+  return 0;
+}
+
+
+TEST_IMPL(spawn_and_kill_with_std) {
+  int r;
+  uv_pipe_t out;
+  uv_pipe_t in;
+
+  init_process_options("spawn_helper4", kill_cb);
+
+  uv_pipe_init(uv_default_loop(), &out, 0);
+  uv_pipe_init(uv_default_loop(), &in, 0);
+  options.stdout_stream = &out;
+  options.stdin_stream = &in;
+
+  r = uv_spawn(uv_default_loop(), &process, options);
+  ASSERT(r == 0);
+
+  r = uv_timer_init(uv_default_loop(), &timer);
+  ASSERT(r == 0);
+
+  r = uv_timer_start(&timer, timer_cb, 500, 0);
+  ASSERT(r == 0);
+
+  r = uv_run(uv_default_loop());
+  ASSERT(r == 0);
+
+  ASSERT(exit_cb_called == 1);
+  ASSERT(close_cb_called == 2); /* Once for process and once for timer. */
+
+  return 0;
+}
+
+
+TEST_IMPL(spawn_and_ping) {
+  uv_write_t write_req;
+  uv_pipe_t in, out;
+  uv_buf_t buf;
+  int r;
+
+  init_process_options("spawn_helper3", exit_cb);
+  buf = uv_buf_init("TEST", 4);
+
+  uv_pipe_init(uv_default_loop(), &out, 0);
+  uv_pipe_init(uv_default_loop(), &in, 0);
+  options.stdout_stream = &out;
+  options.stdin_stream = &in;
+
+  r = uv_spawn(uv_default_loop(), &process, options);
+  ASSERT(r == 0);
+
+  /* Sending signum == 0 should check if the
+   * child process is still alive, not kill it.
+   */
+  r = uv_process_kill(&process, 0);
+  ASSERT(r == 0);
+
+  r = uv_write(&write_req, (uv_stream_t*)&in, &buf, 1, write_cb);
+  ASSERT(r == 0);
+
+  r = uv_read_start((uv_stream_t*)&out, on_alloc, on_read);
+  ASSERT(r == 0);
+
+  ASSERT(exit_cb_called == 0);
+
+  r = uv_run(uv_default_loop());
+  ASSERT(r == 0);
+
+  ASSERT(exit_cb_called == 1);
+  ASSERT(strcmp(output, "TEST") == 0);
+
+  return 0;
+}
+
+
+TEST_IMPL(kill) {
+  int r;
+  uv_err_t err;
+
+#ifdef _WIN32
+  no_term_signal = 1;
+#endif
+
+  init_process_options("spawn_helper4", kill_cb);
+
+  r = uv_spawn(uv_default_loop(), &process, options);
+  ASSERT(r == 0);
+
+  /* Sending signum == 0 should check if the
+   * child process is still alive, not kill it.
+   */
+  err = uv_kill(process.pid, 0);
+  ASSERT(err.code == UV_OK);
+
+  /* Kill the process. */
+  err = uv_kill(process.pid, /* SIGTERM */ 15);
+  ASSERT(err.code == UV_OK);
+
+  r = uv_run(uv_default_loop());
+  ASSERT(r == 0);
+
+  ASSERT(exit_cb_called == 1);
+  ASSERT(close_cb_called == 1);
 
   return 0;
 }
@@ -234,11 +343,9 @@ TEST_IMPL(spawn_detect_pipe_name_collisions_on_windows) {
   char name[64];
   HANDLE pipe_handle;
 
-  uv_init();
-
   init_process_options("spawn_helper2", exit_cb);
 
-  uv_pipe_init(&out);
+  uv_pipe_init(uv_default_loop(), &out, 0);
   options.stdout_stream = &out;
 
   /* Create a pipe that'll cause a collision. */
@@ -253,13 +360,13 @@ TEST_IMPL(spawn_detect_pipe_name_collisions_on_windows) {
                                 NULL);
   ASSERT(pipe_handle != INVALID_HANDLE_VALUE);
 
-  r = uv_spawn(&process, options);
+  r = uv_spawn(uv_default_loop(), &process, options);
   ASSERT(r == 0);
 
   r = uv_read_start((uv_stream_t*) &out, on_alloc, on_read);
   ASSERT(r == 0);
 
-  r = uv_run();
+  r = uv_run(uv_default_loop());
   ASSERT(r == 0);
 
   ASSERT(exit_cb_called == 1);

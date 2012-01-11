@@ -77,9 +77,10 @@
 				Name="VCLinkerTool"
 				RegisterOutput="false"
 				IgnoreImportLibrary="false"
-				AdditionalDependencies="http_parser.lib uv.lib ws2_32.lib wldap32.lib"
+				AdditionalDependencies="http_parser.lib uv.lib ws2_32.lib wldap32.lib PSAPI.lib Iphlpapi.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;..\deps\http_parser\Debug&quot;;&quot;..\deps\uv\Debug\&quot;"
+				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile=".\np_node.def"
 				GenerateDebugInformation="true"
 				MapExports="true"
@@ -144,7 +145,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="&quot;..\deps\uv\include&quot;;&quot;..\deps\http_parser&quot;"

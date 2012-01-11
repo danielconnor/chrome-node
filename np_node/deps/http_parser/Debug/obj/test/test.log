@@ -1,0 +1,123 @@
+﻿Build started 9/29/2011 7:23:08 PM.
+     1>Project "C:\Node\joyent-node-790f13d\deps\http_parser\test.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Touching "Debug\obj\test\test.unsuccessfulbuild".
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I. /Zi /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _CRT_SECURE_NO_DEPRECATE /D _CRT_NONSTDC_NO_DEPRECATE /D DEBUG /D _DEBUG /GF /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\obj\test\\" /Fd"Debug\obj\test\vc100.pdb" /Gd /TC /analyze- /errorReport:prompt test.c
+         test.c
+     1>test.c(74): error C2059: syntax error : '.'
+     1>test.c(93): error C2059: syntax error : ','
+     1>test.c(130): error C2059: syntax error : ','
+     1>test.c(149): error C2059: syntax error : ','
+     1>test.c(165): error C2059: syntax error : ','
+     1>test.c(180): error C2059: syntax error : ','
+     1>test.c(199): error C2059: syntax error : ','
+     1>test.c(219): error C2059: syntax error : ','
+     1>test.c(243): error C2059: syntax error : ','
+     1>test.c(265): error C2059: syntax error : ','
+     1>test.c(288): error C2059: syntax error : ','
+     1>test.c(315): error C2059: syntax error : ','
+     1>test.c(338): error C2059: syntax error : ','
+     1>test.c(358): error C2059: syntax error : ','
+     1>test.c(381): error C2059: syntax error : ','
+     1>test.c(399): error C2059: syntax error : ','
+     1>test.c(414): error C2059: syntax error : ','
+     1>test.c(446): error C2059: syntax error : ','
+     1>test.c(469): error C2059: syntax error : ','
+     1>test.c(485): error C2059: syntax error : ','
+     1>test.c(501): error C2059: syntax error : ','
+     1>test.c(523): error C2059: syntax error : ','
+     1>test.c(549): error C2059: syntax error : ','
+     1>test.c(565): error C2059: syntax error : ','
+     1>test.c(581): error C2059: syntax error : ','
+     1>test.c(638): error C2059: syntax error : ','
+     1>test.c(663): error C2059: syntax error : ','
+     1>test.c(683): error C2059: syntax error : ','
+     1>test.c(684): error C2059: syntax error : '}'
+     1>test.c(689): error C2059: syntax error : '.'
+     1>test.c(723): error C2059: syntax error : ','
+     1>test.c(780): error C2059: syntax error : ','
+     1>test.c(795): error C2059: syntax error : ','
+     1>test.c(809): error C2059: syntax error : ','
+     1>test.c(841): error C2059: syntax error : ','
+     1>test.c(862): error C2059: syntax error : ','
+     1>test.c(889): error C2059: syntax error : ','
+     1>test.c(915): error C2059: syntax error : ','
+     1>test.c(950): error C2059: syntax error : ','
+     1>test.c(983): error C2059: syntax error : ','
+     1>test.c(1023): error C2059: syntax error : ','
+     1>test.c(1045): error C2059: syntax error : ','
+     1>test.c(1046): error C2059: syntax error : '}'
+     1>test.c(1060): error C2143: syntax error : missing ';' before 'type'
+     1>test.c(1062): error C2065: 'm' : undeclared identifier
+     1>test.c(1062): error C2223: left of '->last_header_element' must point to struct/union
+     1>test.c(1063): error C2065: 'm' : undeclared identifier
+     1>test.c(1063): error C2223: left of '->num_headers' must point to struct/union
+     1>test.c(1065): error C2065: 'm' : undeclared identifier
+     1>test.c(1065): error C2223: left of '->headers' must point to struct/union
+     1>test.c(1065): error C2065: 'm' : undeclared identifier
+     1>test.c(1065): error C2223: left of '->num_headers' must point to struct/union
+     1>test.c(1065): warning C4090: 'function' : different 'const' qualifiers
+     1>test.c(1065): warning C4047: 'function' : 'const char *' differs in levels of indirection from 'size_t'
+     1>test.c(1065): warning C4024: 'strncat' : different types for formal and actual parameter 2
+     1>test.c(1065): error C2198: 'strncat' : too few arguments for call
+     1>test.c(1067): error C2065: 'm' : undeclared identifier
+     1>test.c(1067): error C2223: left of '->last_header_element' must point to struct/union
+     1>test.c(1076): error C2143: syntax error : missing ';' before 'type'
+     1>test.c(1078): error C2065: 'm' : undeclared identifier
+     1>test.c(1078): error C2223: left of '->headers' must point to struct/union
+     1>test.c(1078): error C2065: 'm' : undeclared identifier
+     1>test.c(1078): error C2223: left of '->num_headers' must point to struct/union
+     1>test.c(1078): warning C4090: 'function' : different 'const' qualifiers
+     1>test.c(1078): warning C4047: 'function' : 'const char *' differs in levels of indirection from 'size_t'
+     1>test.c(1078): warning C4024: 'strncat' : different types for formal and actual parameter 2
+     1>test.c(1078): error C2198: 'strncat' : too few arguments for call
+     1>test.c(1080): error C2065: 'm' : undeclared identifier
+     1>test.c(1080): error C2223: left of '->last_header_element' must point to struct/union
+     1>test.c(1146): error C2059: syntax error : '.'
+     1>test.c(1156): error C2059: syntax error : '.'
+     1>test.c(1166): error C2059: syntax error : '.'
+     1>test.c(1215): error C2054: expected '(' to follow 'inline'
+     1>test.c(1218): error C2085: 'check_str_eq' : not in formal parameter list
+     1>test.c(1218): error C2143: syntax error : missing ';' before '{'
+     1>test.c(1235): error C2054: expected '(' to follow 'inline'
+     1>test.c(1238): error C2085: 'check_num_eq' : not in formal parameter list
+     1>test.c(1238): error C2143: syntax error : missing ';' before '{'
+     1>test.c(1261): warning C4013: 'check_num_eq' undefined; assuming extern returning int
+     1>test.c(1278): warning C4013: 'check_str_eq' undefined; assuming extern returning int
+     1>test.c(1287): error C2143: syntax error : missing ';' before 'type'
+     1>test.c(1289): error C2065: 'r' : undeclared identifier
+     1>test.c(1290): error C2065: 'r' : undeclared identifier
+     1>test.c(1291): error C2065: 'r' : undeclared identifier
+     1>test.c(1292): error C2065: 'r' : undeclared identifier
+     1>test.c(1371): error C2143: syntax error : missing ';' before 'type'
+     1>test.c(1372): error C2275: 'size_t' : illegal use of this type as an expression
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\codeanalysis\sourceannotations.h(29) : see declaration of 'size_t'
+     1>test.c(1372): error C2146: syntax error : missing ';' before identifier 'i'
+     1>test.c(1372): error C2065: 'i' : undeclared identifier
+     1>test.c(1372): error C2065: 'j' : undeclared identifier
+     1>test.c(1372): error C2065: 'len' : undeclared identifier
+     1>test.c(1372): error C2065: 'error_location_line' : undeclared identifier
+     1>test.c(1373): error C2065: 'i' : undeclared identifier
+     1>test.c(1373): error C2065: 'i' : undeclared identifier
+     1>test.c(1373): error C2065: 'len' : undeclared identifier
+     1>test.c(1373): error C2065: 'i' : undeclared identifier
+     1>test.c(1374): error C2065: 'i' : undeclared identifier
+     1>test.c(1374): error C2065: 'this_line' : undeclared identifier
+     1>test.c(1375): error C2065: 'i' : undeclared identifier
+     1>test.c(1377): error C2065: 'char_len' : undeclared identifier
+     1>test.c(1382): error C2065: 'char_len' : undeclared identifier
+     1>test.c(1385): error C2065: 'this_line' : undeclared identifier
+     1>test.c(1387): error C2065: 'error_location_line' : undeclared identifier
+     1>test.c(1391): error C2065: 'char_len' : undeclared identifier
+     1>test.c(1392): error C2065: 'i' : undeclared identifier
+     1>test.c(1395): error C2065: 'this_line' : undeclared identifier
+     1>test.c(1395): error C2065: 'error_location_line' : undeclared identifier
+     1>test.c(1395): error C2065: 'char_len' : undeclared identifier
+     1>test.c(1401): error C2065: 'j' : undeclared identifier
+     1>test.c(1401): fatal error C1003: error count exceeds 100; stopping compilation
+     1>Done Building Project "C:\Node\joyent-node-790f13d\deps\http_parser\test.vcxproj" (build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.12

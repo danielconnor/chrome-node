@@ -33,55 +33,10 @@
 /*
  * Timers
  */
-RB_HEAD(uv_timer_tree_s, uv_timer_s);
+void uv_timer_endgame(uv_loop_t* loop, uv_timer_t* handle);
 
-void uv_timer_endgame(uv_timer_t* handle);
-
-DWORD uv_get_poll_timeout();
-void uv_process_timers();
-
-
-/*
- * Core
- */
-
-/* Loop state struct. We don't support multiplicity right now, but this */
-/* should help when we get to that. */
-typedef struct uv_loop_s {
-  /* The loop's I/O completion port */
-  HANDLE iocp;
-  /* Reference count that keeps the event loop alive */
-  int refs;
-  /* The current time according to the event loop. in msecs. */
-  int64_t time;
-  /* Tail of a single-linked circular queue of pending reqs. If the queue */
-  /* is empty, tail_ is NULL. If there is only one item, */
-  /* tail_->next_req == tail_ */
-  uv_req_t* pending_reqs_tail;
-  /* Head of a single-linked list of closed handles */
-  uv_handle_t* endgame_handles;
-  /* The head of the timers tree */
-  struct uv_timer_tree_s timers;
-    /* Lists of active loop (prepare / check / idle) watchers */
-  uv_prepare_t* prepare_handles;
-  uv_check_t* check_handles;
-  uv_idle_t* idle_handles;
-  /* This pointer will refer to the prepare/check/idle handle whose */
-  /* callback is scheduled to be called next. This is needed to allow */
-  /* safe removal from one of the lists above while that list being */
-  /* iterated over. */
-  uv_prepare_t* next_prepare_handle;
-  uv_check_t* next_check_handle;
-  uv_idle_t* next_idle_handle;
-  /* Last error code */
-  uv_err_t last_error;
-  /* Error string most recently returned by uv_strerror() */
-  char* err_str;
-} uv_loop_t;
-
-extern uv_loop_t uv_main_loop_;
-
-#define LOOP (&uv_main_loop_)
+DWORD uv_get_poll_timeout(uv_loop_t* loop);
+void uv_process_timers(uv_loop_t* loop);
 
 
 /*
@@ -89,29 +44,38 @@ extern uv_loop_t uv_main_loop_;
  */
 
 /* Private uv_handle flags */
-#define UV_HANDLE_CLOSING          0x0001
-#define UV_HANDLE_CLOSED           0x0002
-#define UV_HANDLE_BOUND            0x0004
-#define UV_HANDLE_LISTENING        0x0008
-#define UV_HANDLE_CONNECTION       0x0010
-#define UV_HANDLE_CONNECTED        0x0020
-#define UV_HANDLE_READING          0x0040
-#define UV_HANDLE_ACTIVE           0x0040
-#define UV_HANDLE_EOF              0x0080
-#define UV_HANDLE_SHUTTING         0x0100
-#define UV_HANDLE_SHUT             0x0200
-#define UV_HANDLE_ENDGAME_QUEUED   0x0400
-#define UV_HANDLE_BIND_ERROR       0x1000
-#define UV_HANDLE_IPV6             0x2000
-#define UV_HANDLE_PIPESERVER       0x4000
-#define UV_HANDLE_READ_PENDING     0x8000
-#define UV_HANDLE_GIVEN_OS_HANDLE  0x10000
-#define UV_HANDLE_UV_ALLOCED       0x20000
-#define UV_HANDLE_SYNC_BYPASS_IOCP 0x40000
-#define UV_HANDLE_ZERO_READ        0x80000
+#define UV_HANDLE_CLOSING                       0x00000001
+#define UV_HANDLE_CLOSED                        0x00000002
+#define UV_HANDLE_BOUND                         0x00000004
+#define UV_HANDLE_LISTENING                     0x00000008
+#define UV_HANDLE_CONNECTION                    0x00000010
+#define UV_HANDLE_CONNECTED                     0x00000020
+#define UV_HANDLE_READING                       0x00000040
+#define UV_HANDLE_ACTIVE                        0x00000040
+#define UV_HANDLE_EOF                           0x00000080
+#define UV_HANDLE_SHUTTING                      0x00000100
+#define UV_HANDLE_SHUT                          0x00000200
+#define UV_HANDLE_ENDGAME_QUEUED                0x00000400
+#define UV_HANDLE_BIND_ERROR                    0x00001000
+#define UV_HANDLE_IPV6                          0x00002000
+#define UV_HANDLE_PIPESERVER                    0x00004000
+#define UV_HANDLE_READ_PENDING                  0x00008000
+#define UV_HANDLE_UV_ALLOCED                    0x00010000
+#define UV_HANDLE_SYNC_BYPASS_IOCP              0x00020000
+#define UV_HANDLE_ZERO_READ                     0x00040000
+#define UV_HANDLE_TTY_RAW                       0x00080000
+#define UV_HANDLE_EMULATE_IOCP                  0x00100000
+#define UV_HANDLE_NON_OVERLAPPED_PIPE           0x00200000
+#define UV_HANDLE_TTY_SAVED_POSITION            0x00400000
+#define UV_HANDLE_TTY_SAVED_ATTRIBUTES          0x00800000
+#define UV_HANDLE_SHARED_TCP_SERVER             0x01000000
+#define UV_HANDLE_TCP_NODELAY                   0x02000000
+#define UV_HANDLE_TCP_KEEPALIVE                 0x04000000
+#define UV_HANDLE_TCP_SINGLE_ACCEPT             0x08000000
+#define UV_HANDLE_TCP_ACCEPT_STATE_CHANGING     0x10000000
 
-void uv_want_endgame(uv_handle_t* handle);
-void uv_process_endgames();
+void uv_want_endgame(uv_loop_t* loop, uv_handle_t* handle);
+void uv_process_endgames(uv_loop_t* loop);
 
 #define DECREASE_PENDING_REQ_COUNT(handle)    \
   do {                                        \
@@ -120,7 +84,7 @@ void uv_process_endgames();
                                               \
     if (handle->flags & UV_HANDLE_CLOSING &&  \
         handle->reqs_pending == 0) {          \
-      uv_want_endgame((uv_handle_t*)handle);  \
+      uv_want_endgame(loop, (uv_handle_t*)handle);  \
     }                                         \
   } while (0)
 
@@ -134,15 +98,15 @@ void uv_process_endgames();
 /*
  * Requests
  */
-void uv_req_init(uv_req_t* req);
+void uv_req_init(uv_loop_t* loop, uv_req_t* req);
 
 uv_req_t* uv_overlapped_to_req(OVERLAPPED* overlapped);
 
-void uv_insert_pending_req(uv_req_t* req);
-void uv_process_reqs();
+void uv_insert_pending_req(uv_loop_t* loop, uv_req_t* req);
+void uv_process_reqs(uv_loop_t* loop);
 
-#define POST_COMPLETION_FOR_REQ(req)                                    \
-  if (!PostQueuedCompletionStatus(LOOP->iocp,                           \
+#define POST_COMPLETION_FOR_REQ(loop, req)                              \
+  if (!PostQueuedCompletionStatus((loop)->iocp,                         \
                                   0,                                    \
                                   0,                                    \
                                   &((req)->overlapped))) {              \
@@ -153,7 +117,7 @@ void uv_process_reqs();
 /*
  * Streams
  */
-void uv_stream_init(uv_stream_t* handle);
+void uv_stream_init(uv_loop_t* loop, uv_stream_t* handle);
 void uv_connection_init(uv_stream_t* handle);
 
 size_t uv_count_bufs(uv_buf_t bufs[], int count);
@@ -166,75 +130,118 @@ int uv_tcp_listen(uv_tcp_t* handle, int backlog, uv_connection_cb cb);
 int uv_tcp_accept(uv_tcp_t* server, uv_tcp_t* client);
 int uv_tcp_read_start(uv_tcp_t* handle, uv_alloc_cb alloc_cb,
     uv_read_cb read_cb);
-int uv_tcp_write(uv_write_t* req, uv_tcp_t* handle, uv_buf_t bufs[],
-    int bufcnt, uv_write_cb cb);
-int uv_tcp_getsockname(uv_tcp_t* handle, struct sockaddr* name, int* namelen);
+int uv_tcp_write(uv_loop_t* loop, uv_write_t* req, uv_tcp_t* handle,
+    uv_buf_t bufs[], int bufcnt, uv_write_cb cb);
 
-void uv_process_tcp_read_req(uv_tcp_t* handle, uv_req_t* req);
-void uv_process_tcp_write_req(uv_tcp_t* handle, uv_write_t* req);
-void uv_process_tcp_accept_req(uv_tcp_t* handle, uv_req_t* req);
-void uv_process_tcp_connect_req(uv_tcp_t* handle, uv_connect_t* req);
+void uv_process_tcp_read_req(uv_loop_t* loop, uv_tcp_t* handle, uv_req_t* req);
+void uv_process_tcp_write_req(uv_loop_t* loop, uv_tcp_t* handle,
+    uv_write_t* req);
+void uv_process_tcp_accept_req(uv_loop_t* loop, uv_tcp_t* handle,
+    uv_req_t* req);
+void uv_process_tcp_connect_req(uv_loop_t* loop, uv_tcp_t* handle,
+    uv_connect_t* req);
 
-void uv_tcp_endgame(uv_tcp_t* handle);
+void uv_tcp_endgame(uv_loop_t* loop, uv_tcp_t* handle);
+
+int uv_tcp_import(uv_tcp_t* tcp, WSAPROTOCOL_INFOW* socket_protocol_info);
+
+int uv_tcp_duplicate_socket(uv_tcp_t* handle, int pid,
+    LPWSAPROTOCOL_INFOW protocol_info);
 
 
 /*
  * UDP
  */
-int uv_udp_getsockname(uv_udp_t* handle, struct sockaddr* name, int* namelen);
+void uv_process_udp_recv_req(uv_loop_t* loop, uv_udp_t* handle, uv_req_t* req);
+void uv_process_udp_send_req(uv_loop_t* loop, uv_udp_t* handle,
+    uv_udp_send_t* req);
 
-void uv_process_udp_recv_req(uv_udp_t* handle, uv_req_t* req);
-void uv_process_udp_send_req(uv_udp_t* handle, uv_udp_send_t* req);
-
-void uv_udp_endgame(uv_udp_t* handle);
+void uv_udp_endgame(uv_loop_t* loop, uv_udp_t* handle);
 
 
 /*
  * Pipes
  */
-int uv_pipe_init_with_handle(uv_pipe_t* handle, HANDLE pipeHandle);
-int uv_stdio_pipe_server(uv_pipe_t* handle, DWORD access, char* name, size_t nameSize);
+int uv_stdio_pipe_server(uv_loop_t* loop, uv_pipe_t* handle, DWORD access,
+    char* name, size_t nameSize);
 void close_pipe(uv_pipe_t* handle, int* status, uv_err_t* err);
-void uv_pipe_endgame(uv_pipe_t* handle);
+void uv_pipe_endgame(uv_loop_t* loop, uv_pipe_t* handle);
 
 int uv_pipe_listen(uv_pipe_t* handle, int backlog, uv_connection_cb cb);
-int uv_pipe_accept(uv_pipe_t* server, uv_pipe_t* client);
+int uv_pipe_accept(uv_pipe_t* server, uv_stream_t* client);
 int uv_pipe_read_start(uv_pipe_t* handle, uv_alloc_cb alloc_cb,
     uv_read_cb read_cb);
-int uv_pipe_write(uv_write_t* req, uv_pipe_t* handle, uv_buf_t bufs[],
-    int bufcnt, uv_write_cb cb);
+int uv_pipe_read2_start(uv_pipe_t* handle, uv_alloc_cb alloc_cb,
+    uv_read2_cb read_cb);
+int uv_pipe_write(uv_loop_t* loop, uv_write_t* req, uv_pipe_t* handle,
+    uv_buf_t bufs[], int bufcnt, uv_write_cb cb);
+int uv_pipe_write2(uv_loop_t* loop, uv_write_t* req, uv_pipe_t* handle,
+    uv_buf_t bufs[], int bufcnt, uv_stream_t* send_handle, uv_write_cb cb);
 
-void uv_process_pipe_read_req(uv_pipe_t* handle, uv_req_t* req);
-void uv_process_pipe_write_req(uv_pipe_t* handle, uv_write_t* req);
-void uv_process_pipe_accept_req(uv_pipe_t* handle, uv_req_t* raw_req);
-void uv_process_pipe_connect_req(uv_pipe_t* handle, uv_connect_t* req);
-void uv_process_pipe_shutdown_req(uv_pipe_t* handle, uv_shutdown_t* req);
+void uv_process_pipe_read_req(uv_loop_t* loop, uv_pipe_t* handle,
+    uv_req_t* req);
+void uv_process_pipe_write_req(uv_loop_t* loop, uv_pipe_t* handle,
+    uv_write_t* req);
+void uv_process_pipe_accept_req(uv_loop_t* loop, uv_pipe_t* handle,
+    uv_req_t* raw_req);
+void uv_process_pipe_connect_req(uv_loop_t* loop, uv_pipe_t* handle,
+    uv_connect_t* req);
+void uv_process_pipe_shutdown_req(uv_loop_t* loop, uv_pipe_t* handle,
+    uv_shutdown_t* req);
+
+
+/*
+ * TTY
+ */
+void uv_console_init();
+
+int uv_tty_read_start(uv_tty_t* handle, uv_alloc_cb alloc_cb,
+    uv_read_cb read_cb);
+int uv_tty_read_stop(uv_tty_t* handle);
+int uv_tty_write(uv_loop_t* loop, uv_write_t* req, uv_tty_t* handle,
+    uv_buf_t bufs[], int bufcnt, uv_write_cb cb);
+void uv_tty_close(uv_tty_t* handle);
+
+void uv_process_tty_read_req(uv_loop_t* loop, uv_tty_t* handle,
+    uv_req_t* req);
+void uv_process_tty_write_req(uv_loop_t* loop, uv_tty_t* handle,
+    uv_write_t* req);
+/* TODO: remove me */
+void uv_process_tty_accept_req(uv_loop_t* loop, uv_tty_t* handle,
+    uv_req_t* raw_req);
+/* TODO: remove me */
+void uv_process_tty_connect_req(uv_loop_t* loop, uv_tty_t* handle,
+    uv_connect_t* req);
+
+void uv_tty_endgame(uv_loop_t* loop, uv_tty_t* handle);
+
 
 /*
  * Loop watchers
  */
-void uv_loop_watcher_endgame(uv_handle_t* handle);
+void uv_loop_watcher_endgame(uv_loop_t* loop, uv_handle_t* handle);
 
-void uv_prepare_invoke();
-void uv_check_invoke();
-void uv_idle_invoke();
+void uv_prepare_invoke(uv_loop_t* loop);
+void uv_check_invoke(uv_loop_t* loop);
+void uv_idle_invoke(uv_loop_t* loop);
 
 
 /*
  * Async watcher
  */
-void uv_async_endgame(uv_async_t* handle);
+void uv_async_endgame(uv_loop_t* loop, uv_async_t* handle);
 
-void uv_process_async_wakeup_req(uv_async_t* handle, uv_req_t* req);
+void uv_process_async_wakeup_req(uv_loop_t* loop, uv_async_t* handle,
+    uv_req_t* req);
 
 
 /*
  * Spawn
  */
-void uv_process_proc_exit(uv_process_t* handle);
-void uv_process_proc_close(uv_process_t* handle);
-void uv_process_close(uv_process_t* handle);
-void uv_process_endgame(uv_process_t* handle);
+void uv_process_proc_exit(uv_loop_t* loop, uv_process_t* handle);
+void uv_process_proc_close(uv_loop_t* loop, uv_process_t* handle);
+void uv_process_close(uv_loop_t* loop, uv_process_t* handle);
+void uv_process_endgame(uv_loop_t* loop, uv_process_t* handle);
 
 
 /*
@@ -242,26 +249,46 @@ void uv_process_endgame(uv_process_t* handle);
  */
 typedef struct uv_ares_action_s uv_ares_action_t;
 
-void uv_process_ares_event_req(uv_ares_action_t* handle, uv_req_t* req);
-void uv_process_ares_cleanup_req(uv_ares_task_t* handle, uv_req_t* req);
+void uv_process_ares_event_req(uv_loop_t* loop, uv_ares_action_t* handle,
+    uv_req_t* req);
+void uv_process_ares_cleanup_req(uv_loop_t* loop, uv_ares_task_t* handle,
+    uv_req_t* req);
 
 /*
  * Getaddrinfo
  */
-void uv_process_getaddrinfo_req(uv_getaddrinfo_t* handle, uv_req_t* req);
+void uv_process_getaddrinfo_req(uv_loop_t* loop, uv_getaddrinfo_t* handle,
+    uv_req_t* req);
 
 
 /*
- * Error handling
+ * FS
  */
-extern const uv_err_t uv_ok_;
+void uv_fs_init();
+void uv_process_fs_req(uv_loop_t* loop, uv_fs_t* req);
+
+
+/*
+ * Threadpool
+ */
+void uv_process_work_req(uv_loop_t* loop, uv_work_t* req);
+
+
+/*
+ * FS Event
+ */
+void uv_process_fs_event_req(uv_loop_t* loop, uv_req_t* req, uv_fs_event_t* handle);
+void uv_fs_event_close(uv_loop_t* loop, uv_fs_event_t* handle);
+void uv_fs_event_endgame(uv_loop_t* loop, uv_fs_event_t* handle);
+
+
+/* Utils */
+int uv_parent_pid();
+
 
 void uv_fatal_error(const int errorno, const char* syscall);
 
 uv_err_code uv_translate_sys_error(int sys_errno);
-uv_err_t uv_new_sys_error(int sys_errno);
-void uv_set_sys_error(int sys_errno);
-void uv_set_error(uv_err_code code, int sys_errno);
 
 #define SET_REQ_STATUS(req, status)                                     \
    (req)->overlapped.Internal = (ULONG_PTR) (status)
@@ -284,19 +311,36 @@ void uv_set_error(uv_err_code code, int sys_errno);
 #define GET_REQ_SOCK_ERROR(req)                                         \
   (uv_ntstatus_to_winsock_error(GET_REQ_STATUS((req))))
 
-#define GET_REQ_UV_ERROR(req)                                           \
-  (uv_new_sys_error(GET_REQ_ERROR((req))))
 
-#define GET_REQ_UV_SOCK_ERROR(req)                                      \
-  (uv_new_sys_error(GET_REQ_SOCK_ERROR((req))))
+/*
+ * Winapi and ntapi utility functions
+ */
+void uv_winapi_init();
 
 
 /*
- * Initialization for the windows and winsock api
+ * Winsock utility functions
  */
-void uv_winapi_init();
 void uv_winsock_init();
+
 int uv_ntstatus_to_winsock_error(NTSTATUS status);
 
+BOOL uv_get_acceptex_function(SOCKET socket, LPFN_ACCEPTEX* target);
+BOOL uv_get_connectex_function(SOCKET socket, LPFN_CONNECTEX* target);
+
+int WSAAPI uv_wsarecv_workaround(SOCKET socket, WSABUF* buffers,
+    DWORD buffer_count, DWORD* bytes, DWORD* flags, WSAOVERLAPPED *overlapped,
+    LPWSAOVERLAPPED_COMPLETION_ROUTINE completion_routine);
+int WSAAPI uv_wsarecvfrom_workaround(SOCKET socket, WSABUF* buffers,
+    DWORD buffer_count, DWORD* bytes, DWORD* flags, struct sockaddr* addr,
+    int* addr_len, WSAOVERLAPPED *overlapped,
+    LPWSAOVERLAPPED_COMPLETION_ROUTINE completion_routine);
+
+/* Whether ipv6 is supported */
+extern int uv_allow_ipv6;
+
+/* Ip address used to bind to any port at any interface */
+extern struct sockaddr_in uv_addr_ip4_any_;
+extern struct sockaddr_in6 uv_addr_ip6_any_;
 
 #endif /* UV_WIN_INTERNAL_H_ */

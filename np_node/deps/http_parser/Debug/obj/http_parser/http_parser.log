@@ -1,0 +1,18 @@
+﻿Build started 9/5/2011 12:21:33 PM.
+     1>Project "C:\Node\joyent-node-790f13d\deps\http_parser\http_parser.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\obj\http_parser\http_parser.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+       Lib:
+         All outputs are up-to-date.
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\Lib.exe /OUT:"C:\Node\joyent-node-790f13d\deps\http_parser\Debug\http_parser.lib" /NOLOGO Debug\obj\http_parser\http_parser.obj
+         http_parser.vcxproj -> C:\Node\joyent-node-790f13d\deps\http_parser\Debug\http_parser.lib
+       FinalizeBuildStatus:
+         Deleting file "Debug\obj\http_parser\http_parser.unsuccessfulbuild".
+         Touching "Debug\obj\http_parser\http_parser.lastbuildstate".
+     1>Done Building Project "C:\Node\joyent-node-790f13d\deps\http_parser\http_parser.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:02.43
