@@ -1,6 +1,4 @@
 ﻿<html>
-<head>
-</head>
 <body>
     <embed type="application/x-node" id="plugin" />
     <script type="text/javascript">      
@@ -67,27 +65,26 @@
         })();
         
 
-       var WebSocketServer = require('websocket').server;
-       var http = require('http');
-
+       var WebSocketServer = require('websocket').server,
+           http = require('http'),
+           port = 8080;
 
        var server = http.createServer(function (request, response) {
            console.log((new Date()) + " Received request for " + request.url);
            response.writeHead(404);
            response.end();
        });
-       server.listen(8080, function () {
-           console.log("Server is listening on port 8080");
+       server.listen(port, function () {
+           console.log("Server is listening on port " + port);
        });
 
        wsServer = new WebSocketServer({
            httpServer: server,
            autoAcceptConnections: true
        });
-       var conn;
+       
        wsServer.on('connect', function (connection) {
            console.log("device connected...");
-           conn = connection;
            connection.on('message', function (message) {
                if (message.type === 'utf8') {
                    var data = JSON.parse(message.utf8Data);
@@ -209,10 +206,8 @@
 
            this.connection.on("message", function (message) {
                if (message.type == 'utf8') {
-                   //console.log(message);
                    var data = JSON.parse(message.utf8Data)
                    handheld.orientation = data.orientation;
-                   //console.log(JSON.stringify(data.orientation));
                    if (handheld.computer) {
                        handheld.update();
                    }

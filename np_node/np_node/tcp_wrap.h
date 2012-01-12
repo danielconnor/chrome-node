@@ -3,8 +3,7 @@
 
 #include "ScriptableObject.h"
 #include "uv.h"
-
-DWORD WINAPI run_uv(LPVOID lpParam);
+#include <queue>
 
 //callbacks
 void OnConnection(uv_stream_t* server, int status);
@@ -73,6 +72,7 @@ public:
 
 	static DWORD WINAPI run_uv(LPVOID lpParam);
 	static void invoke_worker_thread(uv_async_t* handle);
+
 };
 
 
@@ -81,11 +81,9 @@ struct InvokeParams {
 	NPVariant* args;
 	int argCount;
 	TCPWrap* object;
-	InvokeParams* next;
 };
 
-static InvokeParams* currentParamWrite = NULL;
-static InvokeParams* currentParamRead = NULL;
+static std::queue<InvokeParams *> invoke_queue;
 
 #endif
 

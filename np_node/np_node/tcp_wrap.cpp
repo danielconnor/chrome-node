@@ -114,8 +114,6 @@ bool TCPWrap::SetProperty(NPIdentifier name, const NPVariant *value)
 	return true;
 }
 
-
-
 TCPWrap::~TCPWrap()
 {
 	delete stream;
@@ -142,7 +140,6 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 	InvokeParams* params = new InvokeParams;
 	params->name = name;
 	params->object = this;
-	params->next = NULL;
 
 
 	if(name == write_func) 
@@ -154,18 +151,6 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 	{
 		params->args = new NPVariant[argCount];
 		params->argCount = argCount;
-	}
-
-
-	if(currentParamWrite == NULL) 
-	{
-		currentParamRead = new InvokeParams;
-		currentParamRead->next = currentParamWrite = params;
-	}
-	else
-	{
-		currentParamWrite->next = params;
-		currentParamWrite = params;
 	}
 
 	
@@ -216,6 +201,8 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 		*result = params->args[argCount - 1];
 	}
 
+	invoke_queue.push(params);
+
 	uv_async_send(&TCPWrap::async_handle);
 	return true;
 }
@@ -227,12 +214,9 @@ void TCPWrap::invoke_worker_thread(uv_async_t* handle)
 
 	// if there's a build up of invoke requests handle them all
 	// while you're at it
-	// does same thing as if most of the time
-	while(currentParamRead->next != NULL) {
-		params = currentParamRead->next;
-		delete currentParamRead;
-		currentParamRead = params;
-		
+	while(!invoke_queue.empty())
+	{
+		params = invoke_queue.front();
 		NPVariant* args = params->args;
 		uint32_t argCount = params->argCount;
 		NPIdentifier name = params->name;
@@ -256,7 +240,10 @@ void TCPWrap::invoke_worker_thread(uv_async_t* handle)
 		if(name == s->write_func) {
 			s->write(args[0],args[params->argCount - 1].value.objectValue);
 		}
+
+		invoke_queue.pop();
 		delete[] params->args;
+		delete params;
 	}
 }
 
