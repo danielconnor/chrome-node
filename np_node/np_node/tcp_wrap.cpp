@@ -55,6 +55,7 @@ void TCPWrap::init(uv_tcp_t* stream)
 bool TCPWrap::HasMethod(NPIdentifier name)
 {
 	return name == onread_cb ||
+			name == onshutdown_cb ||
 			name == onconnection_cb ||
 			name == connect_func ||
 			name == close_func ||
@@ -63,7 +64,8 @@ bool TCPWrap::HasMethod(NPIdentifier name)
 			name == readstart_func ||
 			name == readstop_func ||
 			name == bind_func ||
-			name == listen_func;
+			name == listen_func ||
+			name == shutdown_func;
 }
 bool TCPWrap::HasProperty(NPIdentifier name)
 {
@@ -136,6 +138,11 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 		apply(onread_callback,args,argCount,result);
 		return true;
 	}
+	if(name == onshutdown_cb)
+	{
+		apply(onshutdown_callback,args,argCount,result);
+		return true;
+	}
 
 	InvokeParams* params = new InvokeParams;
 	params->name = name;
@@ -158,6 +165,9 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 	{
 		params->args[q] = *CopyNPVariant(&args[q]);
 	}
+
+	// if there is a write request a reference must be returned to javascript so it has
+	// to be done before the rest of the work is handed off to the worker thread
 	if(name == write_func) 
 	{
 		argCount++;
@@ -200,9 +210,14 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 		//return the write request
 		*result = params->args[argCount - 1];
 	}
+	if(name = shutdown_func)
+	{
+
+	}
 
 	invoke_queue.push(params);
 
+	//wake the worker thread
 	uv_async_send(&TCPWrap::async_handle);
 	return true;
 }

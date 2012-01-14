@@ -50,15 +50,18 @@ public:
 	NPIdentifier write_func;
 	NPIdentifier close_func;
 	NPIdentifier connect_func;
+	NPIdentifier shutdown_func;
 
 	NPIdentifier onconnection_cb;
 	NPIdentifier onread_cb;
+	NPIdentifier onshutdown_cb;
 
 	NPIdentifier socket_prop;
 	
 
 
 	// callbacks
+	NPObject* onshutdown_callback;
 	NPObject* onconnection_callback;
 	NPObject* onread_callback;
 

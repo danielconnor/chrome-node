@@ -183,7 +183,7 @@ Socket.prototype.end = function (data, encoding) {
         this.destroySoon();
     } else {
         this._flags |= FLAG_SHUTDOWN;
-        var shutdownReq = this._handle.shutdown();
+        var shutdownReq = this._handle.shutdown(afterShutdown);
 
         if (!shutdownReq) {
             this.destroy(errnoException(errno, 'shutdown'));
