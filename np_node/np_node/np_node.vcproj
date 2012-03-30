@@ -146,8 +146,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
+				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
+				EnableFiberSafeOptimizations="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="&quot;..\deps\uv\include&quot;;&quot;..\deps\http_parser&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_USRDLL;NPRUNTIME_EXPORTS;XP_WIN32;MOZILLA_STRICT_API;XPCOM_GLUE;XP_WIN;_X86_;NPSIMPLE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="false"
@@ -172,7 +176,7 @@
 				Name="VCLinkerTool"
 				RegisterOutput="false"
 				IgnoreImportLibrary="false"
-				AdditionalDependencies="http_parser.lib uv.lib ws2_32.lib wldap32.lib"
+				AdditionalDependencies="http_parser.lib uv.lib ws2_32.lib wldap32.lib PSAPI.lib Iphlpapi.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;..\deps\http_parser\Release&quot;;&quot;..\deps\uv\Release\&quot;"
 				IgnoreAllDefaultLibraries="false"
@@ -259,6 +263,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\shutdown_req.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\tcp_wrap.cpp"
 				>
 			</File>
@@ -314,6 +322,10 @@
 			</File>
 			<File
 				RelativePath=".\ScriptableObject.h"
+				>
+			</File>
+			<File
+				RelativePath=".\shutdown_req.h"
 				>
 			</File>
 			<File

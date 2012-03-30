@@ -1,4 +1,4 @@
-﻿<html>
+<html>
 <body>
     <embed type="application/x-node" id="plugin" />
     <script type="text/javascript">      
@@ -58,13 +58,46 @@
             if(contents) {
               return eval(START_LOAD + contents + END_LOAD);
             }
-
           };
 
           return require;
         })();
         
 
+
+      if(false)
+      {
+        var WebSocketServer = require('websocket').server,
+           http = require('http'),
+           port = 8080;
+
+       var server = http.createServer(function (request, response) {
+           console.log((new Date()) + " Received request for " + request.url);
+           response.writeHead(404);
+           response.end();
+       });
+       server.listen(port, function () {
+           console.log("Server is listening on port " + port);
+       });
+
+       wsServer = new WebSocketServer({
+           httpServer: server,
+           autoAcceptConnections: true
+       });
+       var messages = 0;
+       wsServer.on('connect', function (connection) {
+           connection.sendUTF("1");
+           console.time(messages.toString());
+           connection.on('message', function (message) {
+              console.timeEnd(messages.toString());
+              messages++;
+              console.time(messages.toString());
+              connection.sendUTF("1");
+           });
+       });
+
+      }
+      else {
        var WebSocketServer = require('websocket').server,
            http = require('http'),
            port = 8080;
@@ -82,7 +115,7 @@
            httpServer: server,
            autoAcceptConnections: true
        });
-       
+
        wsServer.on('connect', function (connection) {
            console.log("device connected...");
            connection.on('message', function (message) {
@@ -238,7 +271,7 @@
            message.id = this.id;
            this.connection.sendUTF(JSON.stringify(message));
        };
-
+    }
 
     </script>
 

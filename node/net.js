@@ -190,7 +190,7 @@ Socket.prototype.end = function (data, encoding) {
             return false;
         }
 
-        shutdownReq.oncomplete = afterShutdown;
+        //shutdownReq.oncomplete = afterShutdown;
     }
 
     return true;
@@ -369,6 +369,8 @@ Socket.prototype.write = function (data /* [encoding], [fd], [cb] */) {
 
     //changed this to pass callbacks with write function
     //because if data is too short they get called before they are set
+
+    //console.time("write");
     var writeReq = this._handle.write(data, afterWrite, cb);
     if (!writeReq) {
         //this.destroy(errnoException(errno, 'write'));
@@ -384,6 +386,7 @@ Socket.prototype.write = function (data /* [encoding], [fd], [cb] */) {
 
 
 function afterWrite(status, handle, req, buffer) {
+    //console.timeEnd("write");
     var self = handle.socket;
 
     // callback may come after call to destroy.

@@ -2,6 +2,7 @@
 
 #include "npapi.h"
 #include "npruntime.h"
+#include <hash_map>
 
 
 #define CREATE_CLASS(_class)		\

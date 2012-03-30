@@ -5,8 +5,7 @@ CREATE_CLASS(WriteReq);
 
 WriteReq::WriteReq(NPP npp) : ScriptableObject(npp) 
 {
-	this->write_req = new uv_write_t;
-	write_req->data = this;
+	write_req.data = this;
 
 	oncomplete_func = NPN_GetStringIdentifier("oncomplete");
 	cb_func = NPN_GetStringIdentifier("cb");

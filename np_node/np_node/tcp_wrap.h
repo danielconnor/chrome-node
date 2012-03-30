@@ -4,11 +4,13 @@
 #include "ScriptableObject.h"
 #include "uv.h"
 #include <queue>
+#include <hash_map>
 
 //callbacks
 void OnConnection(uv_stream_t* server, int status);
 void OnRead(uv_stream_t* stream, ssize_t nread, uv_buf_t buf);
 void OnWrite(uv_write_t* req, int status);
+void OnShutdown(uv_shutdown_t* req, int status);
 void OnClose(uv_stream_t* stream);
 uv_buf_t OnAlloc(uv_handle_t* handle, size_t suggested_size); 
 
@@ -33,6 +35,7 @@ public:
 	bool write(NPVariant data, NPObject* req);
 	bool readStart();
 	bool readStop();
+	bool shutdown(NPObject* req_obj);
 	bool close();
 
 	bool HasMethod(NPIdentifier name);
@@ -41,7 +44,6 @@ public:
     bool GetProperty(NPIdentifier name, NPVariant *result);
     bool SetProperty(NPIdentifier name, const NPVariant *value);
 	
-
 	// methods & properties
 	NPIdentifier bind_func;
 	NPIdentifier listen_func;
@@ -84,6 +86,7 @@ struct InvokeParams {
 	NPVariant* args;
 	int argCount;
 	TCPWrap* object;
+	NPObject *returnObject;
 };
 
 static std::queue<InvokeParams *> invoke_queue;

@@ -11,7 +11,7 @@ public:
 	// holds the socket that the request is being executed on
 	TCPWrap* socket;
 	//holds the uv write request
-	uv_write_t* write_req;
+	uv_write_t write_req;
 	WriteReq(NPP instance);
 
 	void init(TCPWrap* socket,NPVariant on_complete, NPVariant cb);
@@ -24,7 +24,7 @@ public:
 	char* data;
 
 	//if a buffer is being written this is set to true
-	//because it shouldnt be deleted unlik if it is a string
+	//because it shouldnt be deleted unlike if it is a string
 	bool retainBuffer;
 
 	bool HasProperty(NPIdentifier name);

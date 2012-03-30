@@ -23,10 +23,8 @@ void ExecuteCallback(void* args)
 			NPString s = params->args[i].value.stringValue;
 
 			BufferWrap* b = (BufferWrap*)NPN_CreateObject(params->npp,&BufferWrap::_npclass);
-			b->init(s.UTF8Length);
-
-			memcpy(b->data,s.UTF8Characters,s.UTF8Length);
-			delete[] params->args[i].value.stringValue.UTF8Characters;
+			b->data = (char *)s.UTF8Characters;
+			b->size = s.UTF8Length;
 			params->args[i].type = NPVariantType_Object;
 			params->args[i].value.objectValue = (NPObject*)b;
 		}
@@ -55,7 +53,7 @@ void ScriptableObject::fireCallback(const char* name,NPVariant args[],int arg_le
 	params->npp = m_Instance;
 	params->object = (NPObject*)this;
 	params->name = name;
-	if(async) 
+	if(async)
 	{
 		NPN_PluginThreadAsyncCall(m_Instance, ExecuteCallback, params);
 	}

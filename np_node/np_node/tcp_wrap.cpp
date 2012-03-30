@@ -1,9 +1,9 @@
 #include "tcp_wrap.h"
 #include "write_req.h"
+#include "shutdown_req.h"
 #include "buffer_wrap.h"
 
-
-	CREATE_CLASS(TCPWrap);
+CREATE_CLASS(TCPWrap);
 
 uv_async_t TCPWrap::async_handle;
 
@@ -148,18 +148,8 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 	params->name = name;
 	params->object = this;
 
-
-	if(name == write_func) 
-	{
-		params->args = new NPVariant[argCount + 1];
-		params->argCount = argCount + 1;
-	}
-	else
-	{
-		params->args = new NPVariant[argCount];
-		params->argCount = argCount;
-	}
-
+	params->args = new NPVariant[argCount];
+	params->argCount = argCount;
 	
 	for(uint32_t q = 0; q < argCount; q++) 
 	{
@@ -204,15 +194,25 @@ bool TCPWrap::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount
 		w->init(this,args[1],args[2]);
 		NPN_RetainObject((NPObject*)w);
 
-		params->args[argCount - 1].type = NPVariantType_Object;
-		params->args[argCount - 1].value.objectValue = (NPObject*)w;
-
+		params->returnObject = (NPObject*)w;
+		
 		//return the write request
-		*result = params->args[argCount - 1];
+		result->type = NPVariantType_Object;
+		result->value.objectValue = params->returnObject;
 	}
-	if(name = shutdown_func)
+	if(name == shutdown_func)
 	{
+		ShutdownReq* w = (ShutdownReq*)NPN_CreateObject(m_Instance,&ShutdownReq::_npclass);
 
+		w->init(this, args[0]);
+		NPN_RetainObject((NPObject*)w);
+
+		params->returnObject = (NPObject *)w;
+
+		//return the shutdown request
+		result->type = NPVariantType_Object;
+		result->value.objectValue = params->returnObject;
+		
 	}
 
 	invoke_queue.push(params);
@@ -237,23 +237,27 @@ void TCPWrap::invoke_worker_thread(uv_async_t* handle)
 		NPIdentifier name = params->name;
 		TCPWrap* s = params->object;
 
-		if(name == s->bind_func) {
+		if(name == s->bind_func) 
+		{
 			s->bind(args[0],args[1]);
 		}
-		if(name == s->listen_func) {
+		else if(name == s->listen_func) {
 			s->listen(args[0]);
 		}
-		if(name == s->readstart_func) {
+		else if(name == s->readstart_func) {
 			s->readStart();
 		}
-		if(name == s->readstop_func) {
+		else if(name == s->readstop_func) {
 			s->readStop();
 		}
-		if(name == s->close_func) {
+		else if(name == s->close_func) {
 			s->close();
 		}
-		if(name == s->write_func) {
-			s->write(args[0],args[params->argCount - 1].value.objectValue);
+		else if(name == s->shutdown_func) {
+			s->shutdown(params->returnObject);
+		}
+		else if(name == s->write_func) {
+			s->write(args[0],params->returnObject);
 		}
 
 		invoke_queue.pop();
@@ -302,12 +306,20 @@ bool TCPWrap::write(NPVariant data,NPObject* req_obj)
 	WriteReq* req = (WriteReq*)req_obj;
 	req->data = (char*)data.value.stringValue.UTF8Characters;
 
-	int r = uv_write(req->write_req, 
+	int r = uv_write(&req->write_req, 
 					(uv_stream_t*)this->stream,
 					&uv_buf_init((char*)data.value.stringValue.UTF8Characters, data.value.stringValue.UTF8Length), 
 					1, 
 					OnWrite);
 
+	return true;
+}
+bool TCPWrap::shutdown(NPObject* req_obj)
+{
+	ShutdownReq* req = (ShutdownReq*)req_obj;
+
+	int r = uv_shutdown(&req->shutdown_req, (uv_stream_t*)stream, OnShutdown);
+						
 	return true;
 }
 bool TCPWrap::close() 
@@ -386,6 +398,15 @@ void OnWrite(uv_write_t* write_req, int status)
 		delete[] req->data;
 	}
 }
+
+void OnShutdown(uv_shutdown_t* shutdown_req, int status)
+{
+	ShutdownReq* req = (ShutdownReq *)shutdown_req->data;
+
+	//NPVariant* args = new NPVariant[3];
+
+}
+
 void OnClose(uv_stream_t* stream)
 {
 	TCPWrap* tcpWrap = (TCPWrap*)stream->data;
