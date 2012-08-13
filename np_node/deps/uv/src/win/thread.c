@@ -19,10 +19,12 @@
  * IN THE SOFTWARE.
  */
 
-#include "uv.h"
-#include "../uv-common.h"
-#include "internal.h"
 #include <assert.h>
+#include <limits.h>
+
+#include "uv.h"
+#include "internal.h"
+
 
 #define HAVE_SRWLOCK_API() (pTryAcquireSRWLockShared != NULL)
 
@@ -110,11 +112,6 @@ int uv_thread_join(uv_thread_t *tid) {
     *tid = 0;
     return 0;
   }
-}
-
-
-uv_thread_t uv_thread_self(void) {
-  return GetCurrentThreadId();
 }
 
 
@@ -208,6 +205,44 @@ void uv_rwlock_wrunlock(uv_rwlock_t* rwlock) {
     uv__rwlock_srwlock_wrunlock(rwlock);
   else
     uv__rwlock_fallback_wrunlock(rwlock);
+}
+
+
+int uv_sem_init(uv_sem_t* sem, unsigned int value) {
+  *sem = CreateSemaphore(NULL, value, INT_MAX, NULL);
+  return *sem ? 0 : -1;
+}
+
+
+void uv_sem_destroy(uv_sem_t* sem) {
+  if (!CloseHandle(*sem))
+    abort();
+}
+
+
+void uv_sem_post(uv_sem_t* sem) {
+  if (!ReleaseSemaphore(*sem, 1, NULL))
+    abort();
+}
+
+
+void uv_sem_wait(uv_sem_t* sem) {
+  if (WaitForSingleObject(*sem, INFINITE) != WAIT_OBJECT_0)
+    abort();
+}
+
+
+int uv_sem_trywait(uv_sem_t* sem) {
+  DWORD r = WaitForSingleObject(*sem, 0);
+
+  if (r == WAIT_OBJECT_0)
+    return 0;
+
+  if (r == WAIT_TIMEOUT)
+    return -1;
+
+  abort();
+  return -1; /* Satisfy the compiler. */
 }
 
 

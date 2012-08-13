@@ -88,7 +88,7 @@ static void start_server(uv_loop_t* loop, uv_tcp_t* handle) {
   r = uv_listen((uv_stream_t*)handle, 128, connection_cb);
   ASSERT(r == 0);
 
-  uv_unref(loop);
+  uv_unref((uv_handle_t*)handle);
 }
 
 
@@ -124,53 +124,6 @@ TEST_IMPL(tcp_close) {
 
   ASSERT(write_cb_called == NUM_WRITE_REQS);
   ASSERT(close_cb_called == 1);
-
-  return 0;
-}
-
-
-TEST_IMPL(tcp_ref) {
-  uv_tcp_t never;
-  int r;
-
-  /* A tcp just initialized should count as one reference. */
-  r = uv_tcp_init(uv_default_loop(), &never);
-  ASSERT(r == 0);
-
-  /* One unref should set the loop ref count to zero. */
-  uv_unref(uv_default_loop());
-
-  /* Therefore this does not block */
-  uv_run(uv_default_loop());
-
-  return 0;
-}
-
-
-static void never_cb(uv_connect_t* conn_req, int status) {
-  FATAL("never_cb should never be called");
-}
-
-
-TEST_IMPL(tcp_ref2) {
-  uv_tcp_t never;
-  int r;
-
-  /* A tcp just initialized should count as one reference. */
-  r = uv_tcp_init(uv_default_loop(), &never);
-  ASSERT(r == 0);
-
-  r = uv_tcp_connect(&connect_req,
-                     &never,
-                     uv_ip4_addr("127.0.0.1", TEST_PORT),
-                     never_cb);
-  ASSERT(r == 0);
-
-  /* One unref should set the loop ref count to zero. */
-  uv_unref(uv_default_loop());
-
-  /* Therefore this does not block */
-  uv_run(uv_default_loop());
 
   return 0;
 }

@@ -22,9 +22,9 @@
 #ifndef TASK_H_
 #define TASK_H_
 
-
-#include <stdint.h>
 #include <stdio.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #define TEST_PORT 9123
@@ -38,10 +38,14 @@
 # define TEST_PIPENAME_2 "/tmp/uv-test-sock2"
 #endif
 
-#define COUNTOF(a) (sizeof(a) / sizeof(a[0]))
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+
+#define container_of(ptr, type, member) \
+  ((type *) ((char *) (ptr) - offsetof(type, member)))
 
 typedef enum {
   TCP = 0,
+  UDP,
   PIPE
 } stream_type;
 
@@ -99,15 +103,10 @@ typedef enum {
   int run_helper_##name()
 
 
-/* Create a thread. Returns the thread identifier, or 0 on failure. */
-uintptr_t uv_create_thread(void (*entry)(void* arg), void* arg);
-
-/* Wait for a thread to terminate. Should return 0 if the thread ended, -1 on
- * error.
- */
-int uv_wait_thread(uintptr_t thread_id);
-
 /* Pause the calling thread for a number of milliseconds. */
 void uv_sleep(int msec);
+
+/* Format big numbers nicely. WARNING: leaks memory. */
+const char* fmt(double d);
 
 #endif /* TASK_H_ */

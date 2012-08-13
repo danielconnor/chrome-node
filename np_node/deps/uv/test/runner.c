@@ -19,6 +19,7 @@
  * IN THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include <string.h>
 
 #include "runner.h"
@@ -28,8 +29,40 @@ char executable_path[PATHMAX] = { '\0' };
 
 
 static void log_progress(int total, int passed, int failed, const char* name) {
-  LOGF("[%% %3d|+ %3d|- %3d]: %s", (passed + failed) / total * 100,
+  if (total == 0)
+    total = 1;
+
+  LOGF("[%% %3d|+ %3d|- %3d]: %s", (int) ((passed + failed) / ((double) total) * 100.0),
       passed, failed, name);
+}
+
+
+const char* fmt(double d) {
+  uint64_t v;
+  char* p;
+
+  p = (char *) calloc(1, 32) + 31; /* leaks memory */
+  v = d;
+
+#if 0 /* works but we don't care about fractional precision */
+  if (d - v >= 0.01) {
+    *--p = '0' + (uint64_t) (d * 100) % 10;
+    *--p = '0' + (uint64_t) (d * 10) % 10;
+    *--p = '.';
+  }
+#endif
+
+  if (v == 0)
+    *--p = '0';
+
+  while (v) {
+    if (v) *--p = '0' + (v % 10), v /= 10;
+    if (v) *--p = '0' + (v % 10), v /= 10;
+    if (v) *--p = '0' + (v % 10), v /= 10;
+    if (v) *--p = ',';
+  }
+
+  return p;
 }
 
 
@@ -86,7 +119,13 @@ int run_test(const char* test, int timeout, int benchmark_output) {
   int i;
 
   status = 255;
+  main_proc = NULL;
   process_count = 0;
+
+#ifndef _WIN32
+  /* Clean up stale socket from previous run. */
+  remove(TEST_PIPENAME);
+#endif
 
   /* If it's a helper the user asks for, start it directly. */
   for (task = TASKS; task->main; task++) {
@@ -123,7 +162,7 @@ int run_test(const char* test, int timeout, int benchmark_output) {
   uv_sleep(250);
 
   /* Now start the test itself. */
-  for (main_proc = NULL, task = TASKS; task->main; task++) {
+  for (task = TASKS; task->main; task++) {
     if (strcmp(test, task->task_name) != 0) {
       continue;
     }
@@ -186,7 +225,8 @@ out:
     process_terminate(&processes[i]);
   }
 
-  if (process_wait(processes, process_count - 1, -1) < 0) {
+  if (process_count > 0 &&
+      process_wait(processes, process_count - 1, -1) < 0) {
     FATAL("process_wait failed");
   }
 
@@ -194,6 +234,8 @@ out:
   if (status != 0 || task->show_output) {
     if (status != 0) {
       LOGF("\n`%s` failed: %s\n", test, errmsg);
+    } else {
+      LOGF("\n");
     }
 
     for (i = 0; i < process_count; i++) {

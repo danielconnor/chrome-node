@@ -161,6 +161,9 @@ Socket.prototype.pause = function () {
 
 Socket.prototype.resume = function () {
     if (this._handle) {
+        if(!this._handle.readStart) {
+            debugger;
+        }
         this._handle.readStart();
     }
 };

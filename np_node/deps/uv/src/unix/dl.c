@@ -24,34 +24,60 @@
 
 #include <dlfcn.h>
 #include <errno.h>
+#include <string.h>
+#include <locale.h>
+
+static int uv__dlerror(uv_lib_t* lib);
 
 
-uv_err_t uv_dlopen(const char* filename, uv_lib_t* library) {
-  void* handle = dlopen(filename, RTLD_LAZY);
-  if (handle == NULL) {
-    return uv__new_sys_error(errno);
-  }
-
-  *library = handle;
-  return uv_ok_;
+int uv_dlopen(const char* filename, uv_lib_t* lib) {
+  dlerror(); /* Reset error status. */
+  lib->errmsg = NULL;
+  lib->handle = dlopen(filename, RTLD_LAZY);
+  return lib->handle ? 0 : uv__dlerror(lib);
 }
 
 
-uv_err_t uv_dlclose(uv_lib_t library) {
-  if (dlclose(library) != 0) {
-    return uv__new_sys_error(errno);
+void uv_dlclose(uv_lib_t* lib) {
+  if (lib->errmsg) {
+    free(lib->errmsg);
+    lib->errmsg = NULL;
   }
 
-  return uv_ok_;
+  if (lib->handle) {
+    /* Ignore errors. No good way to signal them without leaking memory. */
+    dlclose(lib->handle);
+    lib->handle = NULL;
+  }
 }
 
 
-uv_err_t uv_dlsym(uv_lib_t library, const char* name, void** ptr) {
-  void* address = dlsym(library, name);
-  if (address == NULL) {
-    return uv__new_sys_error(errno);
-  }
+int uv_dlsym(uv_lib_t* lib, const char* name, void** ptr) {
+  dlerror(); /* Reset error status. */
+  *ptr = dlsym(lib->handle, name);
+  return uv__dlerror(lib);
+}
 
-  *ptr = (void*) address;
-  return uv_ok_;
+
+const char* uv_dlerror(uv_lib_t* lib) {
+  return lib->errmsg ? lib->errmsg : "no error";
+}
+
+
+static int uv__dlerror(uv_lib_t* lib) {
+  char* errmsg;
+
+  if (lib->errmsg)
+    free(lib->errmsg);
+
+  errmsg = dlerror();
+
+  if (errmsg) {
+    lib->errmsg = strdup(errmsg);
+    return -1;
+  }
+  else {
+    lib->errmsg = NULL;
+    return 0;
+  }
 }

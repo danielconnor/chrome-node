@@ -26,14 +26,12 @@
 #include <stdio.h>
 #include <string.h> /* strlen */
 
-ares_channel channel;
-struct ares_options options;
-int optmask;
+static ares_channel channel;
 
-int ares_bynamecallbacks;
-int bynamecallbacksig;
-int ares_byaddrcallbacks;
-int byaddrcallbacksig;
+static int ares_bynamecallbacks;
+static int bynamecallbacksig;
+static int ares_byaddrcallbacks;
+static int byaddrcallbacksig;
 
 static void aresbynamecallback( void *arg,
                           int status,
@@ -63,19 +61,12 @@ static void aresbyaddrcallback( void *arg,
 }
 
 
-static void prep_tcploopback() {
-  /* for test, use echo server - TCP port TEST_PORT on loopback */
-  struct sockaddr_in test_server = uv_ip4_addr("127.0.0.1", 0);
-  int rc;
-
-  optmask = ARES_OPT_SERVERS | ARES_OPT_TCP_PORT | ARES_OPT_FLAGS;
-  options.servers = &test_server.sin_addr;
-  options.nservers = 1;
-  options.tcp_port = htons(TEST_PORT);
-  options.flags = ARES_FLAG_USEVC;
-
-  rc = uv_ares_init_options(uv_default_loop(), &channel, &options, optmask);
-  ASSERT(rc == ARES_SUCCESS);
+static void setup_cares() {
+  int r;
+  struct ares_options options;
+  memset(&options, 0, sizeof options);
+  r = uv_ares_init_options(uv_default_loop(), &channel, &options, 0);
+  ASSERT(r == ARES_SUCCESS);
 }
 
 
@@ -91,7 +82,7 @@ TEST_IMPL(gethostbyname) {
   }
 
   printf("Start basic gethostbyname test\n");
-  prep_tcploopback();
+  setup_cares();
 
   ares_bynamecallbacks = 0;
   bynamecallbacksig = 7;
@@ -112,7 +103,7 @@ TEST_IMPL(gethostbyname) {
   /* two sequential call on new channel */
 
   printf("Start gethostbyname and gethostbyaddr sequential test\n");
-  prep_tcploopback();
+  setup_cares();
 
   ares_bynamecallbacks = 0;
   bynamecallbacksig = 7;
@@ -151,7 +142,7 @@ TEST_IMPL(gethostbyname) {
   /* two simultaneous calls on new channel */
 
   printf("Start gethostbyname and gethostbyaddr concurrent test\n");
-  prep_tcploopback();
+  setup_cares();
 
   ares_bynamecallbacks = 0;
   bynamecallbacksig = 7;

@@ -50,6 +50,7 @@ void TCPWrap::init(uv_tcp_t* stream)
 
 	this->stream = stream;
 	this->stream->data = (void *)this;
+
 }
 
 bool TCPWrap::HasMethod(NPIdentifier name)

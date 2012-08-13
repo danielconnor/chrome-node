@@ -25,14 +25,14 @@ exports.INSPECT_MAX_BYTES = 50;
 
 
 function SlowBuffer(size) {
-    if (parseInt(size)) {
+    if (parseInt(size, 10)) {
         this._handle = NODE.createBuffer(size + 1);
     }
     else {
         this._handle = size;
     }
     this.length = this._handle.length;
-};
+}
 SlowBuffer.prototype.asciiSlice = function (start, end) {
     return this._handle.asciiSlice(start, end);
 };
@@ -69,7 +69,7 @@ SlowBuffer.prototype.inspect = function () {
     var out = [],
   len = this.length;
     for (var i = 0; i < len; i++) {
-        out[i] = toHex(this[i]);
+        out[i] = toHex(this.get(i));
         if (i == exports.INSPECT_MAX_BYTES) {
             out[i + 1] = '...';
             break;
@@ -87,14 +87,14 @@ SlowBuffer.prototype.hexSlice = function (start, end) {
 
     var out = '';
     for (var i = start; i < end; i++) {
-        out += toHex(this[i]);
+        out += toHex(this.get(i));
     }
     return out;
 };
 
 SlowBuffer.byteLength = function (string, encoding) {
     return string.length;
-}
+};
 
 SlowBuffer.prototype.toString = function (encoding, start, end) {
     encoding = String(encoding || 'utf8').toLowerCase();
