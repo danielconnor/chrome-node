@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="np_nodePS">
+</Property><Property Name="Solution File" Value="E:\Projects\chrome-node\np_node\np_node\np_nodePS.sln">
+</Property><Property Name="Date" Value="01 November 2012">
+</Property><Property Name="Time" Value="08:31:12">
+</Property></Properties><Event ErrorLevel="0" Project="np_nodePS" Source="np_nodePS.vcproj" Description="Converting project file 'E:\Projects\chrome-node\np_node\np_node\np_nodePS.vcproj'.">
+</Event><Event ErrorLevel="1" Project="np_nodePS" Source="np_nodePS.vcproj" Description="VCWebServiceProxyGeneratorTool is no longer supported. The tool has been removed from your project settings.">
+</Event><Event ErrorLevel="0" Project="np_nodePS" Source="np_nodePS.vcproj" Description="Done converting to new project file 'E:\Projects\chrome-node\np_node\np_node\np_nodePS.vcxproj'.">
+</Event><Event ErrorLevel="3" Project="np_nodePS" Source="np_nodePS.vcproj" Description="Converted">
+</Event></UpgradeLog>
