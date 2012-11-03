@@ -275,8 +275,8 @@ bool TCPWrap::bind(NPVariant address, NPVariant port)
 	// the address must be null terminated
 	c_address[address.value.stringValue.UTF8Length] = '\0';
 
-    struct sockaddr_in s_address = uv_ip4_addr(c_address, c_port);
-    int r = uv_tcp_bind(this->stream, s_address);
+	struct sockaddr_in s_address = uv_ip4_addr(c_address, c_port);
+	int r = uv_tcp_bind(this->stream, s_address);
 
 	return true;
 }
@@ -286,7 +286,7 @@ bool TCPWrap::listen(NPVariant backlog)
 {
 	int c_backlog = static_cast<int> (backlog.value.doubleValue);
 
-    int r = uv_listen((uv_stream_t*)this->stream, c_backlog, OnConnection);
+	int r = uv_listen((uv_stream_t*)this->stream, c_backlog, OnConnection);
 
 	return true;
 }

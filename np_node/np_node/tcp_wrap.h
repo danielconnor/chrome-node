@@ -40,9 +40,9 @@ public:
 
 	bool HasMethod(NPIdentifier name);
 	bool Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount, NPVariant *result);
-    bool HasProperty(NPIdentifier name);
-    bool GetProperty(NPIdentifier name, NPVariant *result);
-    bool SetProperty(NPIdentifier name, const NPVariant *value);
+	bool HasProperty(NPIdentifier name);
+	bool GetProperty(NPIdentifier name, NPVariant *result);
+	bool SetProperty(NPIdentifier name, const NPVariant *value);
 	
 	// methods & properties
 	NPIdentifier bind_func;
@@ -72,8 +72,8 @@ public:
 
 	static uv_async_t async_handle;
 
-    static NPObject* Allocate(NPP npp, NPClass *aClass);
-    static NPClass _npclass;
+	static NPObject* Allocate(NPP npp, NPClass *aClass);
+	static NPClass _npclass;
 
 	static DWORD WINAPI run_uv(LPVOID lpParam);
 	static void invoke_worker_thread(uv_async_t* handle);

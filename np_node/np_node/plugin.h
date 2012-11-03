@@ -45,28 +45,28 @@
 class CPlugin
 {
 private:
-  NPP m_pNPInstance;
+	NPP m_pNPInstance;
 
-  NPStream * m_pNPStream;
-  NPBool m_bInitialized;
+	NPStream * m_pNPStream;
+	NPBool m_bInitialized;
 
-  NPObject *m_pScriptableObject;
-
-public:
-  char m_String[128];
+	NPObject *m_pScriptableObject;
 
 public:
-  CPlugin(NPP pNPInstance);
-  ~CPlugin();
+	char m_String[128];
 
-  void shut();
-  NPBool isInitialized();
-  
-  int16_t handleEvent(void* event);
+public:
+	CPlugin(NPP pNPInstance);
+	~CPlugin();
 
-  void getVersion(char* *aVersion);
+	void shut();
+	NPBool isInitialized();
+	
+	int16_t handleEvent(void* event);
 
-  NPObject *GetScriptableObject();
+	void getVersion(char* *aVersion);
+
+	NPObject *GetScriptableObject();
 };
 
 #endif // __PLUGIN_H__

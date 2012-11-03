@@ -10,13 +10,13 @@ int OnBody(http_parser*, const char *at, size_t length);
 int OnMessageComplete(http_parser*);
 
 static http_parser_settings http_parser_callbacks = {
-		(http_cb)OnMessageBegin,
-		(http_data_cb)OnUrl,
-		(http_data_cb)OnHeaderField,
-		(http_data_cb)OnHeaderValue,
-		(http_cb)OnHeadersComplete,
-		(http_data_cb)OnBody,
-		(http_cb)OnMessageComplete
+	(http_cb)OnMessageBegin,
+	(http_data_cb)OnUrl,
+	(http_data_cb)OnHeaderField,
+	(http_data_cb)OnHeaderValue,
+	(http_cb)OnHeadersComplete,
+	(http_data_cb)OnBody,
+	(http_cb)OnMessageComplete
 };
 
 
@@ -32,8 +32,8 @@ public:
 
 	bool HasMethod(NPIdentifier name);
 	bool Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount, NPVariant *result);
-    bool HasProperty(NPIdentifier name);
-    bool SetProperty(NPIdentifier name, const NPVariant *value);
+	bool HasProperty(NPIdentifier name);
+	bool SetProperty(NPIdentifier name, const NPVariant *value);
 
 	// callbacks
 	NPObject *onmessagebegin_callback;
