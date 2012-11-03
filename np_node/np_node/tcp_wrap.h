@@ -4,7 +4,7 @@
 #include "ScriptableObject.h"
 #include "uv.h"
 #include <queue>
-#include <hash_map>
+
 
 //callbacks
 void OnConnection(uv_stream_t* server, int status);
@@ -13,9 +13,6 @@ void OnWrite(uv_write_t* req, int status);
 void OnShutdown(uv_shutdown_t* req, int status);
 void OnClose(uv_stream_t* stream);
 uv_buf_t OnAlloc(uv_handle_t* handle, size_t suggested_size); 
-
-DWORD WINAPI run(LPVOID lpParam);
-
 
 class TCPWrap : public ScriptableObject
 {
@@ -75,7 +72,15 @@ public:
 	static NPObject* Allocate(NPP npp, NPClass *aClass);
 	static NPClass _npclass;
 
-	static DWORD WINAPI run_uv(LPVOID lpParam);
+	#ifdef XP_LINUX
+	static void *run_uv(void* params) 
+	#else
+	static DWORD WINAPI run_uv(LPVOID params) 
+	#endif
+	{
+		uv_run(uv_default_loop());
+		return 0;
+	}
 	static void invoke_worker_thread(uv_async_t* handle);
 
 };

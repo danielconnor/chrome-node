@@ -1,7 +1,7 @@
 {
 	"name": "chrome-node",
 	"version": "0.2",
-	"manifest_version": 2,
+	"manifest_version": 1,
 	"description": "Node running in your browser",
 	"background_page": "background.html",
 	"browser_action": {
@@ -9,7 +9,7 @@
 		"default_title": "Sample"
 	},
 	"plugins": [
-		{ "path": "dll/np_node.dll"}
+		{ "path": "dll/np_node.so"}
 	],
 	"permissions": [
 		"<all_urls>"

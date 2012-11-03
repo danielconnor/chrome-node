@@ -7,12 +7,6 @@ CREATE_CLASS(TCPWrap);
 
 uv_async_t TCPWrap::async_handle;
 
-DWORD WINAPI TCPWrap::run_uv(LPVOID lpParam) 
-{
-	uv_run(uv_default_loop());
-	return 0;
-}
-
 TCPWrap::TCPWrap(NPP instance) : ScriptableObject(instance)
 {
 }

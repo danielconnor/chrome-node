@@ -42,207 +42,149 @@
 //
 #include "plugin.h"
 
-char*
-NPP_GetMIMEDescription(void)
+char *NPP_GetMIMEDescription(void)
 {
-  return "application/x-node";
+	return "application/x-node:js:Node in your Chrome extension";
 }
-
-
 
 NPError NPP_Initialize(void)
 {
-  return NPERR_NO_ERROR;
+	return NPERR_NO_ERROR;
 }
 
 void NPP_Shutdown(void)
 {
 }
 
-// here the plugin creates an instance of our CPlugin object which 
-// will be associated with this newly created plugin instance and 
-// will do all the neccessary job
 NPError NPP_New(NPMIMEType pluginType,
-                NPP instance,
-                uint16_t mode,
-                int16_t argc,
-                char* argn[],
-                char* argv[],
-                NPSavedData* saved)
-{   
-  if(instance == NULL)
-    return NPERR_INVALID_INSTANCE_ERROR;
+								NPP instance,
+								uint16_t mode,
+								int16_t argc,
+								char* argn[],
+								char* argv[],
+								NPSavedData* saved)
+{
+	CPlugin * pPlugin = new CPlugin(instance);
+	if(pPlugin == NULL)
+		return NPERR_OUT_OF_MEMORY_ERROR;
 
-  NPError rv = NPERR_NO_ERROR;
+	instance->pdata = (void *)pPlugin;
 
-  CPlugin * pPlugin = new CPlugin(instance);
-  if(pPlugin == NULL)
-    return NPERR_OUT_OF_MEMORY_ERROR;
-
-  instance->pdata = (void *)pPlugin;
-  return rv;
+	return NPERR_NO_ERROR;
 }
 
-// here is the place to clean up and destroy the CPlugin object
 NPError NPP_Destroy (NPP instance, NPSavedData** save)
 {
-  if(instance == NULL)
-    return NPERR_INVALID_INSTANCE_ERROR;
+	if(instance == NULL)
+		return NPERR_INVALID_INSTANCE_ERROR;
 
-  NPError rv = NPERR_NO_ERROR;
-
-  CPlugin * pPlugin = (CPlugin *)instance->pdata;
-  if(pPlugin != NULL) {
-    pPlugin->shut();
-    delete pPlugin;
-  }
-  return rv;
+	CPlugin * pPlugin = (CPlugin *)instance->pdata;
+	if(pPlugin != NULL) {
+		pPlugin->shut();
+		delete pPlugin;
+	}
+	return NPERR_NO_ERROR;
 }
 
-// during this call we know when the plugin window is ready or
-// is about to be destroyed so we can do some gui specific
-// initialization and shutdown
 NPError NPP_SetWindow (NPP instance, NPWindow* pNPWindow)
-{    
-  if(instance == NULL)
-    return NPERR_INVALID_INSTANCE_ERROR;
-
-  NPError rv = NPERR_NO_ERROR;
-
-  if(pNPWindow == NULL)
-    return NPERR_GENERIC_ERROR;
-
-  CPlugin * pPlugin = (CPlugin *)instance->pdata;
-
-  if(pPlugin == NULL) 
-    return NPERR_GENERIC_ERROR;
-
-  return rv;
+{
+	return NPERR_NO_ERROR;
 }
 
 NPError	NPP_GetValue(NPP instance, NPPVariable variable, void *value)
 {
-  if(instance == NULL)
-    return NPERR_INVALID_INSTANCE_ERROR;
+	NPError rv = NPERR_NO_ERROR;
 
-  NPError rv = NPERR_NO_ERROR;
+	CPlugin *plugin = NULL;
 
-  if(instance == NULL)
-    return NPERR_GENERIC_ERROR;
+	switch (variable) {
+    case NPPVpluginNeedsXEmbed:
+      *((bool *)value) = true;
+      break;
+		case NPPVpluginScriptableNPObject:
+			if(instance == NULL)
+				return NPERR_INVALID_INSTANCE_ERROR;
+			
+			plugin = (CPlugin *)instance->pdata;
+			if(plugin == NULL)
+				return NPERR_GENERIC_ERROR;
 
-  CPlugin * plugin = (CPlugin *)instance->pdata;
-  if(plugin == NULL)
-    return NPERR_GENERIC_ERROR;
+			*(NPObject **)value = plugin->GetScriptableObject();
+			break;
+		default:
+			rv = NPERR_GENERIC_ERROR;
+			break;
+	}
 
-  switch (variable) {
-  case NPPVpluginNameString:
-    *((char **)value) = "NPRuntimeTest";
-    break;
-  case NPPVpluginDescriptionString:
-    *((char **)value) = "NPRuntime scriptability API test plugin";
-    break;
-
-  // Here we indicate that the plugin is scriptable. See this page for details:
-  // https://developer.mozilla.org/en/Gecko_Plugin_API_Reference/Scripting_plugins
-  case NPPVpluginScriptableNPObject:
-    *(NPObject **)value = plugin->GetScriptableObject();
-    break;
-  default:
-    rv = NPERR_GENERIC_ERROR;
-  }
-
-  return rv;
+	return rv;
 }
 
 NPError NPP_NewStream(NPP instance,
-                      NPMIMEType type,
-                      NPStream* stream, 
-                      NPBool seekable,
-                      uint16_t* stype)
+											NPMIMEType type,
+											NPStream* stream, 
+											NPBool seekable,
+											uint16_t* stype)
 {
-  if(instance == NULL)
-    return NPERR_INVALID_INSTANCE_ERROR;
+	if(instance == NULL)
+		return NPERR_INVALID_INSTANCE_ERROR;
 
-  NPError rv = NPERR_NO_ERROR;
-  return rv;
+	NPError rv = NPERR_NO_ERROR;
+	return rv;
 }
 
 int32_t NPP_WriteReady (NPP instance, NPStream *stream)
 {
-  if(instance == NULL)
-    return NPERR_INVALID_INSTANCE_ERROR;
+	if(instance == NULL)
+		return NPERR_INVALID_INSTANCE_ERROR;
 
-  int32_t rv = 0x0fffffff;
-  return rv;
+	int32_t rv = 0x0fffffff;
+	return rv;
 }
 
 int32_t NPP_Write (NPP instance, NPStream *stream, int32_t offset, int32_t len, void *buffer)
 {   
-  if(instance == NULL)
-    return NPERR_INVALID_INSTANCE_ERROR;
+	if(instance == NULL)
+		return NPERR_INVALID_INSTANCE_ERROR;
 
-  int32_t rv = len;
-  return rv;
+	int32_t rv = len;
+	return rv;
 }
 
 NPError NPP_DestroyStream (NPP instance, NPStream *stream, NPError reason)
 {
-  if(instance == NULL)
-    return NPERR_INVALID_INSTANCE_ERROR;
+	if(instance == NULL)
+		return NPERR_INVALID_INSTANCE_ERROR;
 
-  NPError rv = NPERR_NO_ERROR;
-  return rv;
-}
-
-void NPP_StreamAsFile (NPP instance, NPStream* stream, const char* fname)
-{
-  if(instance == NULL)
-    return;
-}
-
-void NPP_Print (NPP instance, NPPrint* printInfo)
-{
-  if(instance == NULL)
-    return;
-}
-
-void NPP_URLNotify(NPP instance, const char* url, NPReason reason, void* notifyData)
-{
-  if(instance == NULL)
-    return;
+	return NPERR_NO_ERROR;
 }
 
 NPError NPP_SetValue(NPP instance, NPNVariable variable, void *value)
 {
-  if(instance == NULL)
-    return NPERR_INVALID_INSTANCE_ERROR;
-
-  NPError rv = NPERR_NO_ERROR;
-  return rv;
+	return NPERR_NO_ERROR;
 }
 
 int16_t	NPP_HandleEvent(NPP instance, void* event)
 {
-  if(instance == NULL)
-    return 0;
+	if(instance == NULL)
+		return 0;
 
-  int16_t rv = 0;
-  CPlugin * pPlugin = (CPlugin *)instance->pdata;
-  if (pPlugin)
-    rv = pPlugin->handleEvent(event);
+	int16_t rv = 0;
+	CPlugin * pPlugin = (CPlugin *)instance->pdata;
+	if (pPlugin)
+		rv = pPlugin->handleEvent(event);
 
-  return rv;
+	return rv;
 }
 
-NPObject *NPP_GetScriptableInstance(NPP instance)
+void NPP_StreamAsFile (NPP instance, NPStream* stream, const char* fname)
 {
-  if(!instance)
-    return 0;
-
-  NPObject *npobj = 0;
-  CPlugin * pPlugin = (CPlugin *)instance->pdata;
-  if (!pPlugin)
-    npobj = pPlugin->GetScriptableObject();
-
-  return npobj;
 }
+
+void NPP_Print (NPP instance, NPPrint* printInfo)
+{
+}
+
+void NPP_URLNotify(NPP instance, const char* url, NPReason reason, void* notifyData)
+{
+}
+

@@ -11,8 +11,8 @@ Debug_Libraries=-lhttp_parser -luv -lws2_32 -lwldap32 -lPSAPI -lIphlpapi
 Release_Libraries=-lhttp_parser -luv -lws2_32 -lwldap32 -lPSAPI -lIphlpapi 
 
 # Preprocessor definitions...
-Debug_Preprocessor_Definitions=-D GCC_BUILD -D _DEBUG -D _WINDOWS -D _USRDLL -D NPRUNTIME_EXPORTS -D XP_WIN32 -D MOZILLA_STRICT_API -D XPCOM_GLUE -D XP_WIN -D _X86_ -D NPSIMPLE_EXPORTS -D _CRT_SECURE_NO_WARNINGS 
-Release_Preprocessor_Definitions=-D GCC_BUILD -D _WINDOWS -D _USRDLL -D NPRUNTIME_EXPORTS -D XP_WIN32 -D MOZILLA_STRICT_API -D XPCOM_GLUE -D XP_WIN -D _X86_ -D NPSIMPLE_EXPORTS -D _CRT_SECURE_NO_WARNINGS 
+Debug_Preprocessor_Definitions=-D GCC_BUILD -D _DEBUG -D XP_LINUX -D XP_UNIX -D NPRUNTIME_EXPORTS -D MOZILLA_STRICT_API -D XPCOM_GLUE -D _X86_ -D NPSIMPLE_EXPORTS -D _CRT_SECURE_NO_WARNINGS 
+Release_Preprocessor_Definitions=-D GCC_BUILD -D XP_LINUX -D XP_UNIX -D NPRUNTIME_EXPORTS -D MOZILLA_STRICT_API -D XPCOM_GLUE -D _X86_ -D NPSIMPLE_EXPORTS -D _CRT_SECURE_NO_WARNINGS 
 
 # Implictly linked object files...
 Debug_Implicitly_Linked_Objects=
@@ -29,7 +29,7 @@ build_all_configurations: Debug Release
 # Builds the Debug configuration...
 .PHONY: Debug
 Debug: create_folders gccDebug/buffer_wrap.o gccDebug/np_entry.o gccDebug/npn_gate.o gccDebug/npp_gate.o gccDebug/parser_wrap.o gccDebug/plugin.o gccDebug/ScriptableObject.o gccDebug/shutdown_req.o gccDebug/tcp_wrap.o gccDebug/write_req.o 
-	g++ -fPIC -shared -Wl,-soname,libnp_node.so -o ../../gccdll/libnp_node.so gccDebug/buffer_wrap.o gccDebug/np_entry.o gccDebug/npn_gate.o gccDebug/npp_gate.o gccDebug/parser_wrap.o gccDebug/plugin.o gccDebug/ScriptableObject.o gccDebug/shutdown_req.o gccDebug/tcp_wrap.o gccDebug/write_req.o  $(Debug_Implicitly_Linked_Objects)
+	g++ -fPIC -shared -Wl,-soname,np_node.so -o ../../dll/np_node.so gccDebug/buffer_wrap.o gccDebug/np_entry.o gccDebug/npn_gate.o gccDebug/npp_gate.o gccDebug/parser_wrap.o gccDebug/plugin.o gccDebug/ScriptableObject.o gccDebug/shutdown_req.o gccDebug/tcp_wrap.o gccDebug/write_req.o  $(Debug_Implicitly_Linked_Objects)
 
 # Compiles file buffer_wrap.cpp for the Debug configuration...
 -include gccDebug/buffer_wrap.d
@@ -94,7 +94,7 @@ gccDebug/write_req.o: write_req.cpp
 # Builds the Release configuration...
 .PHONY: Release
 Release: create_folders gccRelease/buffer_wrap.o gccRelease/np_entry.o gccRelease/npn_gate.o gccRelease/npp_gate.o gccRelease/parser_wrap.o gccRelease/plugin.o gccRelease/ScriptableObject.o gccRelease/shutdown_req.o gccRelease/tcp_wrap.o gccRelease/write_req.o 
-	g++ -fPIC -shared -Wl,-soname,libnp_node.so -o ../../gccdll/libnp_node.so gccRelease/buffer_wrap.o gccRelease/np_entry.o gccRelease/npn_gate.o gccRelease/npp_gate.o gccRelease/parser_wrap.o gccRelease/plugin.o gccRelease/ScriptableObject.o gccRelease/shutdown_req.o gccRelease/tcp_wrap.o gccRelease/write_req.o  $(Release_Implicitly_Linked_Objects)
+	g++ -fPIC -shared -Wl,-soname,np_node.so -o ../../dll/np_node.so gccRelease/buffer_wrap.o gccRelease/np_entry.o gccRelease/npn_gate.o gccRelease/npp_gate.o gccRelease/parser_wrap.o gccRelease/plugin.o gccRelease/ScriptableObject.o gccRelease/shutdown_req.o gccRelease/tcp_wrap.o gccRelease/write_req.o  $(Release_Implicitly_Linked_Objects)
 
 # Compiles file buffer_wrap.cpp for the Release configuration...
 -include gccRelease/buffer_wrap.d
@@ -160,23 +160,23 @@ gccRelease/write_req.o: write_req.cpp
 .PHONY: create_folders
 create_folders:
 	mkdir -p gccDebug
-	mkdir -p ../../gccdll
+	mkdir -p ../../dll
 	mkdir -p gccRelease
-	mkdir -p ../../gccdll
+	mkdir -p ../../dll
 
 # Cleans intermediate and output files (objects, libraries, executables)...
 .PHONY: clean
 clean:
 	rm -f gccDebug/*.o
 	rm -f gccDebug/*.d
-	rm -f ../../gccdll/*.a
-	rm -f ../../gccdll/*.so
-	rm -f ../../gccdll/*.dll
-	rm -f ../../gccdll/*.exe
+	rm -f ../../dll/*.a
+	rm -f ../../dll/*.so
+	rm -f ../../dll/*.dll
+	rm -f ../../dll/*.exe
 	rm -f gccRelease/*.o
 	rm -f gccRelease/*.d
-	rm -f ../../gccdll/*.a
-	rm -f ../../gccdll/*.so
-	rm -f ../../gccdll/*.dll
-	rm -f ../../gccdll/*.exe
+	rm -f ../../dll/*.a
+	rm -f ../../dll/*.so
+	rm -f ../../dll/*.dll
+	rm -f ../../dll/*.exe
 

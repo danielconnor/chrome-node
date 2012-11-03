@@ -43,6 +43,7 @@
 #endif
 
 #include "nptypes.h"
+#include <cstddef>
 
 #if defined (__OS2__) || defined (OS2)
 # ifndef XP_OS2

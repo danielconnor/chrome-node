@@ -1,12 +1,16 @@
 #include <stdio.h>
 
+#ifdef XP_LINUX
+#include <pthread.h>
+#endif
+
 #include "plugin.h"
 #include "tcp_wrap.h"
 #include "buffer_wrap.h"
 #include "parser_wrap.h"
 #include "console.h"
 #include "npfunctions.h"
-
+#include <stdio.h>
 
 class ScriptablePluginObject : public ScriptableObject
 {
@@ -98,10 +102,16 @@ CPlugin::CPlugin(NPP pNPInstance) :
   m_pScriptableObject(NULL)
 {
 	NPN_GetValue(m_pNPInstance, NPNVWindowNPObject, &sWindowObj);
-
 	// initialise uv and set up inter-thread communication
-	uv_async_init(uv_default_loop(), &TCPWrap::async_handle, (uv_async_cb)TCPWrap::invoke_worker_thread);
-	CreateThread(NULL,0,TCPWrap::run_uv,NULL,0,NULL);
+
+	// TODO: include the uv library
+	// uv_async_init(uv_default_loop(), &TCPWrap::async_handle, (uv_async_cb)TCPWrap::invoke_worker_thread);
+
+	// #ifdef XP_LINUX
+	// pthread_create(NULL, 0, TCPWrap::run_uv, NULL);
+	// #else
+	// CreateThread(NULL, 0, TCPWrap::run_uv, NULL, 0, NULL);
+	// #endif
 }
 
 CPlugin::~CPlugin()
